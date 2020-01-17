@@ -1,4 +1,4 @@
-React hook for sharing state between components. Inspired by the [provider](https://github.com/rrousselGit/provider) in flutter.
+:octopus: React hook for sharing state between components. Inspired by the [provider](https://github.com/rrousselGit/provider) in flutter.
 
 Live example:
 
