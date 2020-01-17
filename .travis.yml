@@ -1,0 +1,18 @@
+language: node_js
+os:
+  - linux
+cache:
+  yarn: true
+  directories:
+    - ~/.npm
+node_js:
+  - '10'
+script:
+  - yarn test
+  - yarn build
+matrix:
+  allow_failures: []
+  fast_finish: true
+branches:
+  only:
+    - master
