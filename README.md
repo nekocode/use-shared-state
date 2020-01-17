@@ -1,3 +1,5 @@
+[![](https://api.travis-ci.org/nekocode/use-shared-state.svg?branch=master)](https://travis-ci.org/nekocode/use-shared-state)
+
 :octopus: React hook for sharing state between components. Inspired by the [provider](https://github.com/rrousselGit/provider) in flutter.
 
 Live example:
