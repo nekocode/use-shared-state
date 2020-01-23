@@ -5,3 +5,46 @@
 Live example:
 
 [![Edit useSharedState - example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/mystifying-cray-x2gcp?fontsize=14&hidenavigation=1&theme=dark)
+
+Simplest usage:
+
+```tsx
+const CounterContext = createSharedStateContext(new SharedState(0));
+
+const ComponentA = () => {
+  const counter = useSharedState<number>(CounterContext);
+  const onClick = () => {
+    counter.setValue(counter.getValue() + 1);
+  };
+  return (
+    <div>
+      <div>state: {counter.getValue()}</div>
+      <button onClick={onClick}>increase</button>
+    </div>
+  );
+};
+
+const ComponentB = () => {
+  const counter = useSharedState<number>(CounterContext);
+  return <div>state: {counter.getValue()}</div>;
+};
+
+const App = () => {
+  return (
+    <CounterContext.Provider value={new SharedState(0)}>
+      <ComponentA />
+      <ComponentB />
+    </CounterContext.Provider>
+  );
+}
+```
+
+Advanced:
+
+```tsx
+// Only get the shared state, never re-render the component
+const counter = useSharedState<number>(CounterContext, false);
+
+// Re-render the component only when the new value of shared state is bigger than 1
+const counter = useSharedState<number>(CounterContext, (value) => value > 1);
+```
