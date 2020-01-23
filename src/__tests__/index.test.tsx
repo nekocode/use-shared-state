@@ -42,22 +42,42 @@ describe("SharedState", () => {
 
 describe("useSharedState", () => {
   it("works", () => {
-    const Context = createSharedStateContext(0);
+    const Context = createSharedStateContext(new SharedState(0));
 
     const Component1 = () => {
-      const sharedState = useSharedState(Context, false);
-      const onClick = () => {
-        sharedState.setValue(sharedState.getValue() + 1);
-      };
-      return <button id="b1" onClick={onClick}>{sharedState.getValue()}</button>;
-    };
-
-    const Component2 = () => {
       const sharedState = useSharedState(Context);
       const onClick = () => {
         sharedState.setValue(sharedState.getValue() + 1);
       };
-      return <button id="b2" onClick={onClick}>{sharedState.getValue()}</button>;
+      return (
+        <button id="b1" onClick={onClick}>
+          {sharedState.getValue()}
+        </button>
+      );
+    };
+
+    const Component2 = () => {
+      const sharedState = useSharedState(Context, false);
+      const onClick = () => {
+        sharedState.setValue(sharedState.getValue() + 1);
+      };
+      return (
+        <button id="b2" onClick={onClick}>
+          {sharedState.getValue()}
+        </button>
+      );
+    };
+
+    const Component3 = () => {
+      const sharedState = useSharedState(Context, (value) => value > 2);
+      const onClick = () => {
+        sharedState.setValue(sharedState.getValue() + 1);
+      };
+      return (
+        <button id="b3" onClick={onClick}>
+          {sharedState.getValue()}
+        </button>
+      );
     };
 
     const App = () => {
@@ -65,6 +85,7 @@ describe("useSharedState", () => {
         <Context.Provider value={new SharedState(0)}>
           <Component1 />
           <Component2 />
+          <Component3 />
         </Context.Provider>
       );
     };
@@ -74,21 +95,33 @@ describe("useSharedState", () => {
     });
     const button1 = container.querySelector("#b1");
     const button2 = container.querySelector("#b2");
+    const button3 = container.querySelector("#b3");
     expect(button1.textContent).toBe("0");
     expect(button2.textContent).toBe("0");
+    expect(button3.textContent).toBe("0");
 
     // Click button1
     ReactTestUtils.act(() => {
-      button1.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+      button1.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    expect(button1.textContent).toBe("0");
-    expect(button2.textContent).toBe("1");
+    expect(button1.textContent).toBe("1");
+    expect(button2.textContent).toBe("0");
+    expect(button3.textContent).toBe("0");
 
     // Click button2
     ReactTestUtils.act(() => {
-      button2.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+      button2.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    expect(button1.textContent).toBe("0");
-    expect(button2.textContent).toBe("2");
+    expect(button1.textContent).toBe("2");
+    expect(button2.textContent).toBe("0");
+    expect(button3.textContent).toBe("0");
+
+    // Click button3
+    ReactTestUtils.act(() => {
+      button3.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(button1.textContent).toBe("3");
+    expect(button2.textContent).toBe("0");
+    expect(button3.textContent).toBe("3");
   });
 });

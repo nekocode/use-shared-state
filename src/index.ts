@@ -37,23 +37,28 @@ export class SharedState<T> {
 type ISharedStateContext<T> = React.Context<SharedState<T>>;
 
 export function createSharedStateContext<T>(
-  initialValue: T
+  sharedState: SharedState<T>
 ): ISharedStateContext<T> {
-  return React.createContext(new SharedState(initialValue));
+  return React.createContext(sharedState);
 }
 
 export function useSharedState<T>(
   context: ISharedStateContext<T>,
-  listen: boolean = true
+  listen: boolean | ((value: T) => boolean) = true
 ): SharedState<T> {
   const sharedState = useContext(context);
   const [_, setState] = useState<T>();
 
   useEffect(() => {
     if (listen === false) {
+      // If the listen is false, don't add listeners to state
       return;
     }
     const listener = (value: T) => {
+      if (listen instanceof Function && !listen(value)) {
+        // If the listen function returns false, don't setState
+        return;
+      }
       setState(value);
     };
     sharedState.addListener(listener);
