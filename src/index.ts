@@ -46,9 +46,6 @@ export function createSharedStateContext<T>(
  * Accepts a context object and returns the shared state.
  *
  * @param listen Boolean or function to decide whether to re-render the component when the value of the shared state changes
- *
- * @version 16.8.0
- * @see https://reactjs.org/docs/hooks-reference.html#useeffect
  */
 export function useSharedState<T>(
   context: ISharedStateContext<T>,
