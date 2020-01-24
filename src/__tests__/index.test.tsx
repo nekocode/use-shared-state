@@ -69,7 +69,10 @@ describe("useSharedState", () => {
     };
 
     const Component3 = () => {
-      const sharedState = useSharedState(Context, (value) => value > 2);
+      const sharedState = useSharedState(
+        Context,
+        (current, prev) => current + prev === 3
+      );
       const onClick = () => {
         sharedState.setValue(sharedState.getValue() + 1);
       };
@@ -114,7 +117,7 @@ describe("useSharedState", () => {
     });
     expect(button1.textContent).toBe("2");
     expect(button2.textContent).toBe("0");
-    expect(button3.textContent).toBe("0");
+    expect(button3.textContent).toBe("2");
 
     // Click button3
     ReactTestUtils.act(() => {
@@ -122,6 +125,6 @@ describe("useSharedState", () => {
     });
     expect(button1.textContent).toBe("3");
     expect(button2.textContent).toBe("0");
-    expect(button3.textContent).toBe("3");
+    expect(button3.textContent).toBe("2");
   });
 });
