@@ -42,7 +42,8 @@ describe("SharedState", () => {
 
 describe("useSharedState", () => {
   it("works", () => {
-    const Context = createSharedStateContext(new SharedState(0));
+    const sharedState0 = new SharedState(0);
+    const Context = createSharedStateContext(sharedState0);
 
     const Component1 = () => {
       const sharedState = useSharedState(Context);
@@ -57,7 +58,7 @@ describe("useSharedState", () => {
     };
 
     const Component2 = () => {
-      const sharedState = useSharedState(Context, false);
+      const sharedState = useSharedState(sharedState0, false);
       const onClick = () => {
         sharedState.setValue(sharedState.getValue() + 1);
       };
@@ -85,7 +86,7 @@ describe("useSharedState", () => {
 
     const App = () => {
       return (
-        <Context.Provider value={new SharedState(0)}>
+        <Context.Provider value={sharedState0}>
           <Component1 />
           <Component2 />
           <Component3 />

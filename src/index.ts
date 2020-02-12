@@ -43,15 +43,21 @@ export function createSharedStateContext<T>(
 }
 
 /**
- * Accepts a context object and returns the shared state.
+ * Hooks a shared state
  *
+ * @param contextOrSharedState SharedStateContext or SharedState to hook
  * @param listen Boolean or function to decide whether to re-render the component when the value of the shared state changes
  */
 export function useSharedState<T>(
-  context: ISharedStateContext<T>,
+  contextOrSharedState: ISharedStateContext<T> | SharedState<T>,
   listen: boolean | ((current: T, prev: T) => boolean) = true
 ): SharedState<T> {
-  const sharedState = useContext(context);
+  let sharedState: SharedState<T>;
+  if (contextOrSharedState instanceof SharedState) {
+    sharedState = contextOrSharedState;
+  } else {
+    sharedState = useContext(contextOrSharedState);
+  }
   const [_, setState] = useState();
   const prevRef = useRef<T>(sharedState.getValue());
 

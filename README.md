@@ -48,5 +48,12 @@ Advanced:
 const counter = useSharedState<number>(CounterContext, false);
 
 // Re-render the component only when the new value of shared state is bigger than 1
-const counter = useSharedState<number>(CounterContext, (current, prev) => current > 1);
+const counter = useSharedState<number>(CounterContext, (current) => current > 1);
+
+// Re-render the component only when the value of shared state changed
+const counter = useSharedState<number>(CounterContext, (current, prev) => current !== prev);
+
+// Use and hook a shared state directly
+const sharedState = new SharedState(0);
+const conuter = useSharedState<number>(sharedState);
 ```
