@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useContext, useState, useEffect, useRef } from 'react';
 
 type ValueListener<T> = (value: T) => void;
 
@@ -37,7 +37,7 @@ export class SharedState<T> {
 type ISharedStateContext<T> = React.Context<SharedState<T>>;
 
 export function createSharedStateContext<T>(
-  sharedState: SharedState<T>
+  sharedState: SharedState<T>,
 ): ISharedStateContext<T> {
   return React.createContext(sharedState);
 }
@@ -50,15 +50,16 @@ export function createSharedStateContext<T>(
  */
 export function useSharedState<T>(
   contextOrSharedState: ISharedStateContext<T> | SharedState<T>,
-  listen: boolean | ((current: T, prev: T) => boolean) = true
+  listen: boolean | ((current: T, prev: T) => boolean) = true,
 ): SharedState<T> {
   let sharedState: SharedState<T>;
   if (contextOrSharedState instanceof SharedState) {
     sharedState = contextOrSharedState;
   } else {
+    // tslint:disable-next-line:react-hooks-nesting
     sharedState = useContext(contextOrSharedState);
   }
-  const [_, setState] = useState();
+  const updateState = useState(false)[1];
   const prevRef = useRef<T>(sharedState.getValue());
 
   useEffect(() => {
@@ -73,14 +74,14 @@ export function useSharedState<T>(
         return;
       }
 
-      setState(value);
+      updateState(i => !i);
       prevRef.current = value;
     };
     sharedState.addListener(listener);
     return () => {
       sharedState.removeListener(listener);
     };
-  });
+  }, [listen]);
 
   return sharedState;
 }
