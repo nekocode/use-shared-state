@@ -67,15 +67,17 @@ export function useSharedStateDirectly<T>(
 ): SharedState<T> {
   const updateState = useState(false)[1];
   const prevRef = useRef<T>(sharedState.getValue());
+  const listenRef = useRef<boolean | ((current: T, prev: T) => boolean)>();
+  listenRef.current = listen;
 
   useEffect(() => {
-    if (listen === false) {
-      // If the listen is false, don't add listeners to state
-      return;
-    }
     const listener = (value: T) => {
-      if (listen instanceof Function && !listen(value, prevRef.current)) {
-        // If the listen function returns false, don't setState
+      const l = listenRef.current;
+      if (
+        l === false ||
+        (l instanceof Function && !l(value, prevRef.current))
+      ) {
+        // If the listen is or returns false, do not update state
         prevRef.current = value;
         return;
       }
@@ -87,7 +89,7 @@ export function useSharedStateDirectly<T>(
     return () => {
       sharedState.removeListener(listener);
     };
-  }, [listen]);
+  }, []);
 
   return sharedState;
 }

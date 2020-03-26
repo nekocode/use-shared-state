@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import ReactDOM from 'react-dom';
 import ReactTestUtils from 'react-dom/test-utils';
 import {
@@ -46,7 +46,7 @@ describe('SharedState', () => {
 });
 
 describe('useSharedState', () => {
-  it('works', () => {
+  it('normalUsing', () => {
     const sharedState0 = new SharedState(0);
     const Context = createSharedStateContext(sharedState0);
 
@@ -105,6 +105,7 @@ describe('useSharedState', () => {
     const button1 = container.querySelector('#b1');
     const button2 = container.querySelector('#b2');
     const button3 = container.querySelector('#b3');
+    expect(sharedState0.getValue()).toBe(0);
     expect(button1.textContent).toBe('0');
     expect(button2.textContent).toBe('0');
     expect(button3.textContent).toBe('0');
@@ -113,6 +114,7 @@ describe('useSharedState', () => {
     ReactTestUtils.act(() => {
       button1.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
+    expect(sharedState0.getValue()).toBe(1);
     expect(button1.textContent).toBe('1');
     expect(button2.textContent).toBe('0');
     expect(button3.textContent).toBe('0');
@@ -121,6 +123,7 @@ describe('useSharedState', () => {
     ReactTestUtils.act(() => {
       button2.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
+    expect(sharedState0.getValue()).toBe(2);
     expect(button1.textContent).toBe('2');
     expect(button2.textContent).toBe('0');
     expect(button3.textContent).toBe('2');
@@ -129,8 +132,87 @@ describe('useSharedState', () => {
     ReactTestUtils.act(() => {
       button3.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
+    expect(sharedState0.getValue()).toBe(3);
     expect(button1.textContent).toBe('3');
     expect(button2.textContent).toBe('0');
     expect(button3.textContent).toBe('2');
+  });
+
+  it('listenChanged', () => {
+    const sharedState0 = new SharedState(0);
+    const Context = createSharedStateContext(sharedState0);
+
+    const Component1 = () => {
+      const listen = useRef(true);
+      const sharedState = useSharedState(Context, listen.current);
+      const onClick = () => {
+        listen.current = !listen.current;
+        sharedState.setValue(sharedState.getValue() + 1);
+      };
+      return (
+        <button id="b1" onClick={onClick}>
+          {sharedState.getValue()}
+        </button>
+      );
+    };
+
+    const Component2 = () => {
+      const listen = useRef(true);
+      const sharedState = useSharedState(
+        Context,
+        (current, prev) => listen.current,
+      );
+      const onClick = () => {
+        listen.current = false;
+        sharedState.setValue(sharedState.getValue() + 1);
+      };
+      return (
+        <button id="b2" onClick={onClick}>
+          {sharedState.getValue()}
+        </button>
+      );
+    };
+
+    const App = () => {
+      return (
+        <Context.Provider value={sharedState0}>
+          <Component1 />
+          <Component2 />
+        </Context.Provider>
+      );
+    };
+
+    ReactTestUtils.act(() => {
+      ReactDOM.render(<App />, container);
+    });
+    const button1 = container.querySelector('#b1');
+    const button2 = container.querySelector('#b2');
+    expect(sharedState0.getValue()).toBe(0);
+    expect(button1.textContent).toBe('0');
+    expect(button2.textContent).toBe('0');
+
+    // Click button1
+    ReactTestUtils.act(() => {
+      button1.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(sharedState0.getValue()).toBe(1);
+    expect(button1.textContent).toBe('1');
+    expect(button2.textContent).toBe('1');
+
+    // Click button2
+    ReactTestUtils.act(() => {
+      button2.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(sharedState0.getValue()).toBe(2);
+    expect(button1.textContent).toBe('1');
+    expect(button2.textContent).toBe('1');
+
+    // Click button2
+    ReactTestUtils.act(() => {
+      button2.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(sharedState0.getValue()).toBe(3);
+    expect(button1.textContent).toBe('1');
+    expect(button2.textContent).toBe('1');
   });
 });
