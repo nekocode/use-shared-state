@@ -1,6 +1,6 @@
 [![](https://api.travis-ci.org/nekocode/use-shared-state.svg?branch=master)](https://travis-ci.org/nekocode/use-shared-state) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/@nekocode/use-shared-state)
 
-:octopus: React hook for sharing state between components. Inspired by the [provider](https://github.com/rrousselGit/provider) in flutter.
+:octopus: React hook for sharing state between components. Inspired by the [InheritedWidget](https://api.flutter.dev/flutter/widgets/InheritedWidget-class.html) in flutter.
 
 `yarn add @nekocode/use-shared-state`
 
