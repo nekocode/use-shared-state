@@ -1,0 +1,17 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended",
+    "tslint-config-prettier",
+    "tslint-eslint-rules",
+    "tslint-react",
+    "tslint-react-hooks"
+  ],
+  "rules": {
+    "member-access": false,
+    "react-hooks-nesting": "error"
+  },
+  "linterOptions": {
+    "exclude": ["node_modules/**"]
+  }
+}

@@ -1,12 +1,17 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import ReactTestUtils from "react-dom/test-utils";
-import { SharedState, createSharedStateContext, useSharedState } from "..";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import ReactTestUtils from 'react-dom/test-utils';
+import {
+  SharedState,
+  createSharedStateContext,
+  useSharedState,
+  useSharedStateDirectly,
+} from '..';
 
 let container: HTMLElement | any;
 
 beforeEach(() => {
-  container = document.createElement("div");
+  container = document.createElement('div');
   document.body.appendChild(container);
 });
 
@@ -15,15 +20,15 @@ afterEach(() => {
   container = null;
 });
 
-describe("SharedState", () => {
-  it("getAndSet", () => {
+describe('SharedState', () => {
+  it('getAndSet', () => {
     const sharedState = new SharedState(1);
     expect(sharedState.getValue()).toBe(1);
     sharedState.setValue(0);
     expect(sharedState.getValue()).toBe(0);
   });
 
-  it("listeners", () => {
+  it('listeners', () => {
     const sharedState = new SharedState(1);
     let flag = 0;
     const listener = (value: number) => {
@@ -40,8 +45,8 @@ describe("SharedState", () => {
   });
 });
 
-describe("useSharedState", () => {
-  it("works", () => {
+describe('useSharedState', () => {
+  it('works', () => {
     const sharedState0 = new SharedState(0);
     const Context = createSharedStateContext(sharedState0);
 
@@ -58,7 +63,7 @@ describe("useSharedState", () => {
     };
 
     const Component2 = () => {
-      const sharedState = useSharedState(sharedState0, false);
+      const sharedState = useSharedStateDirectly(sharedState0, false);
       const onClick = () => {
         sharedState.setValue(sharedState.getValue() + 1);
       };
@@ -72,7 +77,7 @@ describe("useSharedState", () => {
     const Component3 = () => {
       const sharedState = useSharedState(
         Context,
-        (current, prev) => current + prev === 3
+        (current, prev) => current + prev === 3,
       );
       const onClick = () => {
         sharedState.setValue(sharedState.getValue() + 1);
@@ -97,35 +102,35 @@ describe("useSharedState", () => {
     ReactTestUtils.act(() => {
       ReactDOM.render(<App />, container);
     });
-    const button1 = container.querySelector("#b1");
-    const button2 = container.querySelector("#b2");
-    const button3 = container.querySelector("#b3");
-    expect(button1.textContent).toBe("0");
-    expect(button2.textContent).toBe("0");
-    expect(button3.textContent).toBe("0");
+    const button1 = container.querySelector('#b1');
+    const button2 = container.querySelector('#b2');
+    const button3 = container.querySelector('#b3');
+    expect(button1.textContent).toBe('0');
+    expect(button2.textContent).toBe('0');
+    expect(button3.textContent).toBe('0');
 
     // Click button1
     ReactTestUtils.act(() => {
-      button1.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      button1.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
-    expect(button1.textContent).toBe("1");
-    expect(button2.textContent).toBe("0");
-    expect(button3.textContent).toBe("0");
+    expect(button1.textContent).toBe('1');
+    expect(button2.textContent).toBe('0');
+    expect(button3.textContent).toBe('0');
 
     // Click button2
     ReactTestUtils.act(() => {
-      button2.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      button2.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
-    expect(button1.textContent).toBe("2");
-    expect(button2.textContent).toBe("0");
-    expect(button3.textContent).toBe("2");
+    expect(button1.textContent).toBe('2');
+    expect(button2.textContent).toBe('0');
+    expect(button3.textContent).toBe('2');
 
     // Click button3
     ReactTestUtils.act(() => {
-      button3.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      button3.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
-    expect(button1.textContent).toBe("3");
-    expect(button2.textContent).toBe("0");
-    expect(button3.textContent).toBe("2");
+    expect(button1.textContent).toBe('3');
+    expect(button2.textContent).toBe('0');
+    expect(button3.textContent).toBe('2');
   });
 });

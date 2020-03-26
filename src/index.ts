@@ -45,20 +45,26 @@ export function createSharedStateContext<T>(
 /**
  * Hooks a shared state
  *
- * @param contextOrSharedState SharedStateContext or SharedState to hook
+ * @param context Context of shared state to hook
  * @param listen Boolean or function to decide whether to re-render the component when the value of the shared state changes
  */
 export function useSharedState<T>(
-  contextOrSharedState: ISharedStateContext<T> | SharedState<T>,
+  context: ISharedStateContext<T>,
   listen: boolean | ((current: T, prev: T) => boolean) = true,
 ): SharedState<T> {
-  let sharedState: SharedState<T>;
-  if (contextOrSharedState instanceof SharedState) {
-    sharedState = contextOrSharedState;
-  } else {
-    // tslint:disable-next-line:react-hooks-nesting
-    sharedState = useContext(contextOrSharedState);
-  }
+  return useSharedStateDirectly(useContext(context), listen);
+}
+
+/**
+ * Hooks a shared state
+ *
+ * @param sharedState Shared state to hook
+ * @param listen Boolean or function to decide whether to re-render the component when the value of the shared state changes
+ */
+export function useSharedStateDirectly<T>(
+  sharedState: SharedState<T>,
+  listen: boolean | ((current: T, prev: T) => boolean) = true,
+): SharedState<T> {
   const updateState = useState(false)[1];
   const prevRef = useRef<T>(sharedState.getValue());
 

@@ -54,6 +54,6 @@ const counter = useSharedState<number>(CounterContext, (current) => current > 1)
 const counter = useSharedState<number>(CounterContext, (current, prev) => current !== prev);
 
 // Use and hook a shared state directly
-const sharedState = new SharedState(0);
-const conuter = useSharedState<number>(sharedState);
+const sharedState = getSharedStateFromSomewhere();
+const conuter = useSharedStateDirectly<number>(sharedState);
 ```
