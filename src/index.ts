@@ -11,23 +11,23 @@ export class SharedState<T> {
     return this.value;
   }
 
-  public setValue(value: T) {
+  public setValue(value: T): void {
     this.value = value;
     this.notifyListeners();
   }
 
-  public addListener(listener: ValueListener<T>) {
+  public addListener(listener: ValueListener<T>): void {
     this.listeners.push(listener);
   }
 
-  public removeListener(listener: ValueListener<T>) {
+  public removeListener(listener: ValueListener<T>): void {
     const index = this.listeners.indexOf(listener);
     if (index > -1) {
       this.listeners.splice(index, 1);
     }
   }
 
-  public notifyListeners() {
+  public notifyListeners(): void {
     for (const listener of this.listeners) {
       listener(this.value);
     }
@@ -82,14 +82,14 @@ export function useSharedStateDirectly<T>(
         return;
       }
 
-      updateState(i => !i);
+      updateState((i) => !i);
       prevRef.current = value;
     };
     sharedState.addListener(listener);
     return () => {
       sharedState.removeListener(listener);
     };
-  }, []);
+  }, [sharedState, updateState]);
 
   return sharedState;
 }

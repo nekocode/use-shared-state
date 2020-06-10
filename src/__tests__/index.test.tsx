@@ -8,6 +8,7 @@ import {
   useSharedStateDirectly,
 } from '..';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let container: HTMLElement | any;
 
 beforeEach(() => {
@@ -158,10 +159,7 @@ describe('useSharedState', () => {
 
     const Component2 = () => {
       const listen = useRef(true);
-      const sharedState = useSharedState(
-        Context,
-        (current, prev) => listen.current,
-      );
+      const sharedState = useSharedState(Context, () => listen.current);
       const onClick = () => {
         listen.current = false;
         sharedState.setValue(sharedState.getValue() + 1);
