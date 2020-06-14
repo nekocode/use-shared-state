@@ -4,6 +4,19 @@
 
 `yarn add @nekocode/use-shared-state`
 
+***Why choose it?***
+
+1. It's lightweight, includes only less than 100 lines source code, so it's very suitable to use in component or library projects
+2. Re-rendering components in minimum range. Using the example below, if we share a shared-state with b and e components, then when this shared-state updates, only b and e components will be re-rendered
+```
+  a
++-+-+
+| | |
+b c d
+    |
+    e
+```
+
 Live example:
 
 [![Edit useSharedState - example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/mystifying-cray-x2gcp?fontsize=14&hidenavigation=1&theme=dark)
@@ -44,16 +57,16 @@ const App = () => {
 Advanced:
 
 ```tsx
-// Only get the shared state, never re-render the component
+// Only get the shared state, will never re-render current component
 const counter = useSharedState<number>(CounterContext, false);
 
-// Re-render the component only when the new value of shared state is bigger than 1
+// Will re-render current component only when the value of shared state is bigger than 1
 const counter = useSharedState<number>(CounterContext, (current) => current > 1);
 
-// Re-render the component only when the value of shared state changed
+// Will re-render current component when the value of shared state changes
 const counter = useSharedState<number>(CounterContext, (current, prev) => current !== prev);
 
-// Use and hook a shared state directly
+// Hook a shared state instance directly
 const sharedState = getSharedStateFromSomewhere();
 const conuter = useSharedStateDirectly<number>(sharedState);
 ```
