@@ -27,21 +27,18 @@ Simplest usage:
 const CounterContext = createSharedStateContext(new SharedState(0));
 
 const ComponentA = () => {
-  const counter = useSharedState<number>(CounterContext);
-  const onClick = () => {
-    counter.setValue(counter.getValue() + 1);
-  };
+  const [state, setState] = useSharedState(CounterContext);
   return (
     <div>
-      <div>state: {counter.getValue()}</div>
-      <button onClick={onClick}>increase</button>
+      <div>state: {state}</div>
+      <button onClick={() => setState(state + 1)}>increase</button>
     </div>
   );
 };
 
 const ComponentB = () => {
-  const counter = useSharedState<number>(CounterContext);
-  return <div>state: {counter.getValue()}</div>;
+  const [state] = useSharedState(CounterContext);
+  return <div>state: {state}</div>;
 };
 
 const App = () => {
@@ -57,16 +54,16 @@ const App = () => {
 Advanced:
 
 ```tsx
-// Only get the shared state, will never re-render current component
-const counter = useSharedState<number>(CounterContext, false);
+// Only get current state, will never re-render current component
+const [state, setState, sharedState] = useSharedState(CounterContext, false);
 
-// Will re-render current component only when the value of shared state is bigger than 1
-const counter = useSharedState<number>(CounterContext, (current) => current > 1);
+// Will re-render current component only when the value of state is bigger than 1
+const [state] = useSharedState(CounterContext, (current) => current > 1);
 
-// Will re-render current component when the value of shared state changes
-const counter = useSharedState<number>(CounterContext, (current, prev) => current !== prev);
+// Will re-render current component when the value of state changes
+const [state] = useSharedState(CounterContext, (current, prev) => current !== prev);
 
 // Hook a shared state instance directly
 const sharedState = getSharedStateFromSomewhere();
-const conuter = useSharedStateDirectly<number>(sharedState);
+const [state] = useSharedStateDirectly(sharedState);
 ```

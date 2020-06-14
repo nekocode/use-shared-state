@@ -52,40 +52,40 @@ describe('useSharedState', () => {
     const Context = createSharedStateContext(sharedState0);
 
     const Component1 = () => {
-      const sharedState = useSharedState(Context);
+      const [state, setState] = useSharedState(Context);
       const onClick = () => {
-        sharedState.setValue(sharedState.getValue() + 1);
+        setState((current) => current + 1);
       };
       return (
         <button id="b1" onClick={onClick}>
-          {sharedState.getValue()}
+          {state}
         </button>
       );
     };
 
     const Component2 = () => {
-      const sharedState = useSharedStateDirectly(sharedState0, false);
+      const [state, setState] = useSharedStateDirectly(sharedState0, false);
       const onClick = () => {
-        sharedState.setValue(sharedState.getValue() + 1);
+        setState((current) => current + 1);
       };
       return (
         <button id="b2" onClick={onClick}>
-          {sharedState.getValue()}
+          {state}
         </button>
       );
     };
 
     const Component3 = () => {
-      const sharedState = useSharedState(
+      const [state, setState] = useSharedState(
         Context,
         (current, prev) => current + prev === 3,
       );
       const onClick = () => {
-        sharedState.setValue(sharedState.getValue() + 1);
+        setState((current) => current + 1);
       };
       return (
         <button id="b3" onClick={onClick}>
-          {sharedState.getValue()}
+          {state}
         </button>
       );
     };
@@ -145,28 +145,28 @@ describe('useSharedState', () => {
 
     const Component1 = () => {
       const listen = useRef(true);
-      const sharedState = useSharedState(Context, listen.current);
+      const [state, setState] = useSharedState(Context, listen.current);
       const onClick = () => {
         listen.current = !listen.current;
-        sharedState.setValue(sharedState.getValue() + 1);
+        setState((current) => current + 1);
       };
       return (
         <button id="b1" onClick={onClick}>
-          {sharedState.getValue()}
+          {state}
         </button>
       );
     };
 
     const Component2 = () => {
       const listen = useRef(true);
-      const sharedState = useSharedState(Context, () => listen.current);
+      const [state, setState] = useSharedState(Context, () => listen.current);
       const onClick = () => {
         listen.current = false;
-        sharedState.setValue(sharedState.getValue() + 1);
+        setState((current) => current + 1);
       };
       return (
         <button id="b2" onClick={onClick}>
-          {sharedState.getValue()}
+          {state}
         </button>
       );
     };

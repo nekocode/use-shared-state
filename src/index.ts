@@ -11,8 +11,8 @@ export class SharedState<T> {
     return this.value;
   }
 
-  public setValue(value: T): void {
-    this.value = value;
+  public setValue(value: T | ((current: T) => T)): void {
+    this.value = value instanceof Function ? value(this.value) : value;
     this.notifyListeners();
   }
 
@@ -34,37 +34,37 @@ export class SharedState<T> {
   }
 }
 
-type ISharedStateContext<T> = React.Context<SharedState<T>>;
+type SharedStateContext<T> = React.Context<SharedState<T>>;
 
 export function createSharedStateContext<T>(
   sharedState: SharedState<T>,
-): ISharedStateContext<T> {
+): SharedStateContext<T> {
   return React.createContext(sharedState);
 }
 
 /**
- * Hooks a shared state
+ * Hook a shared state
  *
  * @param context Context of shared state to hook
- * @param listen Boolean or function to decide whether to re-render the component when the value of the shared state changes
+ * @param listen Boolean or function to decide whether to re-render current component when the value of the shared state changes
  */
 export function useSharedState<T>(
-  context: ISharedStateContext<T>,
+  context: SharedStateContext<T>,
   listen: boolean | ((current: T, prev: T) => boolean) = true,
-): SharedState<T> {
+): [T, React.Dispatch<React.SetStateAction<T>>, SharedState<T>] {
   return useSharedStateDirectly(useContext(context), listen);
 }
 
 /**
- * Hooks a shared state
+ * Hook a shared state
  *
  * @param sharedState Shared state to hook
- * @param listen Boolean or function to decide whether to re-render the component when the value of the shared state changes
+ * @param listen Boolean or function to decide whether to re-render current component when the value of the shared state changes
  */
 export function useSharedStateDirectly<T>(
   sharedState: SharedState<T>,
   listen: boolean | ((current: T, prev: T) => boolean) = true,
-): SharedState<T> {
+): [T, React.Dispatch<React.SetStateAction<T>>, SharedState<T>] {
   const updateState = useState(false)[1];
   const prevRef = useRef<T>(sharedState.getValue());
   const listenRef = useRef<boolean | ((current: T, prev: T) => boolean)>();
@@ -91,5 +91,5 @@ export function useSharedStateDirectly<T>(
     };
   }, [sharedState, updateState]);
 
-  return sharedState;
+  return [sharedState.getValue(), (v) => sharedState.setValue(v), sharedState];
 }
