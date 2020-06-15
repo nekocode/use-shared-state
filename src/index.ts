@@ -77,7 +77,7 @@ export function useSharedStateDirectly<T>(
         l === false ||
         (l instanceof Function && !l(value, prevRef.current))
       ) {
-        // If the listen is or returns false, do not update state
+        // If the `listen` is or returns false, do not update state
         prevRef.current = value;
         return;
       }

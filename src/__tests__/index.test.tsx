@@ -27,6 +27,8 @@ describe('SharedState', () => {
     expect(sharedState.getValue()).toBe(1);
     sharedState.setValue(0);
     expect(sharedState.getValue()).toBe(0);
+    sharedState.setValue((i) => i + 1);
+    expect(sharedState.getValue()).toBe(1);
   });
 
   it('listeners', () => {
