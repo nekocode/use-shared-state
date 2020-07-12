@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import ReactTestUtils from 'react-dom/test-utils';
 import {
@@ -214,5 +214,56 @@ describe('useSharedState', () => {
     expect(sharedState0.getValue()).toBe(3);
     expect(button1.textContent).toBe('1');
     expect(button2.textContent).toBe('1');
+  });
+
+  it('fixed setState function', () => {
+    const sharedState0 = new SharedState(0);
+    const Context = createSharedStateContext(sharedState0);
+
+    const Component1 = () => {
+      const [state, setState] = useSharedState(Context);
+      const onClick = () => {
+        setState((current) => current + 1);
+      };
+      return (
+        <button id="b1" onClick={onClick}>
+          {state}
+        </button>
+      );
+    };
+
+    const Component2 = () => {
+      const [state, setState] = useSharedState(Context);
+      useEffect(() => {
+        setState((current) => current + 1);
+      }, [setState]);
+      return <span id="s1">{state}</span>;
+    };
+
+    const App = () => {
+      return (
+        <Context.Provider value={sharedState0}>
+          <Component1 />
+          <Component2 />
+        </Context.Provider>
+      );
+    };
+
+    ReactTestUtils.act(() => {
+      ReactDOM.render(<App />, container);
+    });
+    const button1 = container.querySelector('#b1');
+    const span1 = container.querySelector('#s1');
+    expect(sharedState0.getValue()).toBe(1);
+    expect(button1.textContent).toBe('1');
+    expect(span1.textContent).toBe('1');
+
+    // Click button1
+    ReactTestUtils.act(() => {
+      button1.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(sharedState0.getValue()).toBe(2);
+    expect(button1.textContent).toBe('2');
+    expect(span1.textContent).toBe('2');
   });
 });

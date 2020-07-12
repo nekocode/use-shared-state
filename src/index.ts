@@ -1,4 +1,10 @@
-import React, { useContext, useState, useEffect, useRef } from 'react';
+import React, {
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
 
 type ValueListener<T> = (value: T) => void;
 
@@ -91,5 +97,12 @@ export function useSharedStateDirectly<T>(
     };
   }, [sharedState, updateState]);
 
-  return [sharedState.getValue(), (v) => sharedState.setValue(v), sharedState];
+  const setState = useCallback(
+    (v: React.SetStateAction<T>) => {
+      sharedState.setValue(v);
+    },
+    [sharedState],
+  );
+
+  return [sharedState.getValue(), setState, sharedState];
 }
