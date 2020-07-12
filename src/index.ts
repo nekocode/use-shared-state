@@ -97,12 +97,12 @@ export function useSharedStateDirectly<T>(
     };
   }, [sharedState, updateState]);
 
-  const setState = useCallback(
+  const setSharedState = useCallback(
     (v: React.SetStateAction<T>) => {
       sharedState.setValue(v);
     },
     [sharedState],
   );
 
-  return [sharedState.getValue(), setState, sharedState];
+  return [sharedState.getValue(), setSharedState, sharedState];
 }
