@@ -141,7 +141,7 @@ describe('useSharedState', () => {
     expect(button3.textContent).toBe('2');
   });
 
-  it('listenChanged', () => {
+  it('on listen changed', () => {
     const sharedState0 = new SharedState(0);
     const Context = createSharedStateContext(sharedState0);
 
@@ -216,12 +216,16 @@ describe('useSharedState', () => {
     expect(button2.textContent).toBe('1');
   });
 
-  it('fixed setState function', () => {
+  it('updating in useEffect', () => {
     const sharedState0 = new SharedState(0);
     const Context = createSharedStateContext(sharedState0);
 
     const Component1 = () => {
       const [state, setState] = useSharedState(Context);
+      useEffect(() => {
+        setState((current) => current + 1);
+      }, [setState]);
+
       const onClick = () => {
         setState((current) => current + 1);
       };
@@ -232,19 +236,10 @@ describe('useSharedState', () => {
       );
     };
 
-    const Component2 = () => {
-      const [state, setState] = useSharedState(Context);
-      useEffect(() => {
-        setState((current) => current + 1);
-      }, [setState]);
-      return <span id="s1">{state}</span>;
-    };
-
     const App = () => {
       return (
         <Context.Provider value={sharedState0}>
           <Component1 />
-          <Component2 />
         </Context.Provider>
       );
     };
@@ -253,10 +248,8 @@ describe('useSharedState', () => {
       ReactDOM.render(<App />, container);
     });
     const button1 = container.querySelector('#b1');
-    const span1 = container.querySelector('#s1');
     expect(sharedState0.getValue()).toBe(1);
     expect(button1.textContent).toBe('1');
-    expect(span1.textContent).toBe('1');
 
     // Click button1
     ReactTestUtils.act(() => {
@@ -264,6 +257,5 @@ describe('useSharedState', () => {
     });
     expect(sharedState0.getValue()).toBe(2);
     expect(button1.textContent).toBe('2');
-    expect(span1.textContent).toBe('2');
   });
 });

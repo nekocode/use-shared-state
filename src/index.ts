@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from 'react';
 
-type ValueListener<T> = (value: T) => void;
+type ValueListener<T> = (current: T, prev: T) => void;
 
 export class SharedState<T> {
   private listeners = new Array<ValueListener<T>>();
@@ -18,8 +18,11 @@ export class SharedState<T> {
   }
 
   public setValue(value: T | ((current: T) => T)): void {
+    const prev = this.value;
     this.value = value instanceof Function ? value(this.value) : value;
-    this.notifyListeners();
+    for (const listener of this.listeners) {
+      listener(this.value, prev);
+    }
   }
 
   public addListener(listener: ValueListener<T>): void {
@@ -30,12 +33,6 @@ export class SharedState<T> {
     const index = this.listeners.indexOf(listener);
     if (index > -1) {
       this.listeners.splice(index, 1);
-    }
-  }
-
-  public notifyListeners(): void {
-    for (const listener of this.listeners) {
-      listener(this.value);
     }
   }
 }
@@ -71,25 +68,19 @@ export function useSharedStateDirectly<T>(
   sharedState: SharedState<T>,
   listen: boolean | ((current: T, prev: T) => boolean) = true,
 ): [T, React.Dispatch<React.SetStateAction<T>>, SharedState<T>] {
-  const updateState = useState(false)[1];
-  const prevRef = useRef<T>(sharedState.getValue());
+  const updateState = useState<T>(sharedState.getValue())[1];
   const listenRef = useRef<boolean | ((current: T, prev: T) => boolean)>();
   listenRef.current = listen;
 
   useEffect(() => {
-    const listener = (value: T) => {
+    const listener = (current: T, prev: T) => {
       const l = listenRef.current;
-      if (
-        l === false ||
-        (l instanceof Function && !l(value, prevRef.current))
-      ) {
+      if (l === false || (l instanceof Function && !l(current, prev))) {
         // If the `listen` is or returns false, do not update state
-        prevRef.current = value;
         return;
       }
 
-      updateState((i) => !i);
-      prevRef.current = value;
+      updateState(current);
     };
     sharedState.addListener(listener);
     return () => {
