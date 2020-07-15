@@ -1,6 +1,6 @@
 {
   "name": "@nekocode/use-shared-state",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "React hook for sharing state between components.",
   "scripts": {
     "test": "jest",
