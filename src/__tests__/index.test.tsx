@@ -141,15 +141,15 @@ describe('useSharedState', () => {
     expect(button3.textContent).toBe('2');
   });
 
-  it('on listen changed', () => {
+  it('on shouldUpdate changed', () => {
     const sharedState0 = new SharedState(0);
     const Context = createSharedStateContext(sharedState0);
 
     const Component1 = () => {
-      const listen = useRef(true);
-      const [state, setState] = useSharedState(Context, listen.current);
+      const shouldUpdate = useRef(true);
+      const [state, setState] = useSharedState(Context, shouldUpdate.current);
       const onClick = () => {
-        listen.current = !listen.current;
+        shouldUpdate.current = !shouldUpdate.current;
         setState((current) => current + 1);
       };
       return (
@@ -160,10 +160,13 @@ describe('useSharedState', () => {
     };
 
     const Component2 = () => {
-      const listen = useRef(true);
-      const [state, setState] = useSharedState(Context, () => listen.current);
+      const shouldUpdate = useRef(true);
+      const [state, setState] = useSharedState(
+        Context,
+        () => shouldUpdate.current,
+      );
       const onClick = () => {
-        listen.current = false;
+        shouldUpdate.current = false;
         setState((current) => current + 1);
       };
       return (

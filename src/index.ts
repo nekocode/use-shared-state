@@ -49,34 +49,36 @@ export function createSharedStateContext<T>(
  * Hook a shared state
  *
  * @param context Context of shared state to hook
- * @param listen Boolean or function to decide whether to re-render current component when the value of the shared state changes
+ * @param shouldUpdate Boolean or function to decide whether to re-render current component when the value of the shared state changes
  */
 export function useSharedState<T>(
   context: SharedStateContext<T>,
-  listen: boolean | ((current: T, prev: T) => boolean) = true,
+  shouldUpdate: boolean | ((current: T, prev: T) => boolean) = true,
 ): [T, React.Dispatch<React.SetStateAction<T>>, SharedState<T>] {
-  return useSharedStateDirectly(useContext(context), listen);
+  return useSharedStateDirectly(useContext(context), shouldUpdate);
 }
 
 /**
  * Hook a shared state
  *
  * @param sharedState Shared state to hook
- * @param listen Boolean or function to decide whether to re-render current component when the value of the shared state changes
+ * @param shouldUpdate Boolean or function to decide whether to re-render current component when the value of the shared state changes
  */
 export function useSharedStateDirectly<T>(
   sharedState: SharedState<T>,
-  listen: boolean | ((current: T, prev: T) => boolean) = true,
+  shouldUpdate: boolean | ((current: T, prev: T) => boolean) = true,
 ): [T, React.Dispatch<React.SetStateAction<T>>, SharedState<T>] {
   const updateState = useState<T>(sharedState.getValue())[1];
-  const listenRef = useRef<boolean | ((current: T, prev: T) => boolean)>();
-  listenRef.current = listen;
+  const shouldUpdateRef = useRef<
+    boolean | ((current: T, prev: T) => boolean)
+  >();
+  shouldUpdateRef.current = shouldUpdate;
 
   useEffect(() => {
     const listener = (current: T, prev: T) => {
-      const l = listenRef.current;
+      const l = shouldUpdateRef.current;
       if (l === false || (l instanceof Function && !l(current, prev))) {
-        // If the `listen` is or returns false, do not update state
+        // If the `shouldUpdate` is or returns false, do not update state
         return;
       }
 

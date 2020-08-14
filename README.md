@@ -7,7 +7,7 @@
 ***Why choose it?***
 
 1. It's lightweight, includes only less than 100 lines source code, so it's very suitable to use in component or library projects
-2. Re-rendering components in minimum range. Using the example below, if we share a shared-state with b and e components, then when this shared-state updates, only b and e components will be re-rendered
+2. Update components in minimum range. Using the example below, if we share a shared-state with b and e components, then when this shared-state updates, only b and e components will be updated
 ```
   a
 +-+-+
@@ -54,13 +54,14 @@ const App = () => {
 Advanced:
 
 ```tsx
-// Only get current state, will never re-render current component
+// Only get current state, will never update current component
+// (the second argument is like the shouldComponentUpdate)
 const [state, setState, sharedState] = useSharedState(CounterContext, false);
 
-// Will re-render current component only when the value of state is bigger than 1
+// Will update current component only when the value of state is bigger than 1
 const [state] = useSharedState(CounterContext, (current) => current > 1);
 
-// Will re-render current component when the value of state changes
+// Will update current component when the value of state changes
 const [state] = useSharedState(CounterContext, (current, prev) => current !== prev);
 
 // Hook a shared state instance directly
