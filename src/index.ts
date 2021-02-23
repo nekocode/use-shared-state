@@ -5,13 +5,14 @@ import React, {
   useRef,
   useCallback,
 } from 'react';
+import { Listenable } from './change_notifier';
 
-type ValueListener<T> = (current: T, prev: T) => void;
+export type ValueListener<T> = (current: T, prev: T) => void;
 
-export class SharedState<T> {
-  private listeners = new Array<ValueListener<T>>();
-
-  public constructor(private value: T) {}
+export class SharedState<T> extends Listenable<ValueListener<T>> {
+  public constructor(private value: T) {
+    super();
+  }
 
   public getValue(): T {
     return this.value;
@@ -20,28 +21,23 @@ export class SharedState<T> {
   public setValue(value: T | ((current: T) => T)): void {
     const prev = this.value;
     this.value = value instanceof Function ? value(this.value) : value;
-    for (const listener of this.listeners) {
-      listener(this.value, prev);
+    this.notifyListeners(this.value, prev);
+  }
+
+  public notifyListeners(current: T, prev: T): void {
+    if (!this.hasListeners()) {
+      return;
     }
-  }
 
-  public addListener(listener: ValueListener<T>): void {
-    this.listeners.push(listener);
-  }
-
-  public removeListener(listener: ValueListener<T>): void {
-    const index = this.listeners.indexOf(listener);
-    if (index > -1) {
-      this.listeners.splice(index, 1);
+    for (const listener of this._listeners) {
+      listener(current, prev);
     }
   }
 }
 
-type SharedStateContext<T> = React.Context<SharedState<T>>;
-
 export function createSharedStateContext<T>(
   sharedState: SharedState<T>,
-): SharedStateContext<T> {
+): React.Context<SharedState<T>> {
   return React.createContext(sharedState);
 }
 
@@ -52,7 +48,7 @@ export function createSharedStateContext<T>(
  * @param shouldUpdate Boolean or function to decide whether to re-render current component when the value of the shared state changes
  */
 export function useSharedState<T>(
-  context: SharedStateContext<T>,
+  context: React.Context<SharedState<T>>,
   shouldUpdate: boolean | ((current: T, prev: T) => boolean) = true,
 ): [T, React.Dispatch<React.SetStateAction<T>>, SharedState<T>] {
   return useSharedStateDirectly(useContext(context), shouldUpdate);
