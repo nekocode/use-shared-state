@@ -4,7 +4,7 @@
   "description": "React hook for sharing state between components.",
   "scripts": {
     "test": "jest",
-    "build": "pika-pack build",
+    "build": "pika build",
     "release": "yarn build && cd pkg && yarn publish --access public",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
