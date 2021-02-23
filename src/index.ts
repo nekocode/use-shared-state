@@ -6,6 +6,7 @@ import React, {
   useCallback,
 } from 'react';
 import { Listenable } from './change_notifier';
+export * from './change_notifier';
 
 export type ValueListener<T> = (current: T, prev: T) => void;
 
