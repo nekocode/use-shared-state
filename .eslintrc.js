@@ -9,8 +9,7 @@ module.exports = {
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
     'plugin:prettier/recommended',
-    'prettier/react',
-    'prettier/standard',
+    'prettier',
   ],
   rules: {
     'prettier/prettier': 'error',
