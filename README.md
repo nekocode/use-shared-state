@@ -72,20 +72,22 @@ const [state] = useSharedState(sharedState, (current, prev) => current !== prev)
 ```tsx
 const refetchNotifier = new ChangeNotifier();
 // In component A
-useListen(refetchNotifier, () => {
+const listener = useCallback(() => {
   refetch();
-});
+}, [refetch]);
+useListen(refetchNotifier, listener);
 // In component B, call notifyListeners() of refetchNotifier to let A run refetch()
 refetchNotifier.notifyListeners();
 
 
 const eventNotifier = new ValueNotifier<string | undefined>(undefined)
 // In component A
-useListen(eventNotifier, () => {
+const listener = useCallback(() => {
   if (eventNotifier.getValue() === 'refetch') {
     refetch();
   }
-});
+}, [eventNotifier, refetch]);
+useListen(eventNotifier, listener);
 // In component B, call setValue to let A run the callback
 eventNotifier.setValue('refetch');
 ```
