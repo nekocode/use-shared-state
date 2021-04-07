@@ -66,3 +66,26 @@ const [state] = useSharedState(sharedState, (current) => current > 1);
 // Will update current component when the value of state changes
 const [state] = useSharedState(sharedState, (current, prev) => current !== prev);
 ```
+
+`ChangeNotifier`, `ValueNotifier` & `useListen`:
+
+```tsx
+const refetchNotifier = new ChangeNotifier();
+// In component A
+useListen(refetchNotifier, () => {
+  refetch();
+});
+// In component B, call notifyListeners() of refetchNotifier to let A run refetch()
+refetchNotifier.notifyListeners();
+
+
+const eventNotifier = new ValueNotifier<string | undefined>(undefined)
+// In component A
+useListen(eventNotifier, () => {
+  if (eventNotifier.getValue() === 'refetch') {
+    refetch();
+  }
+});
+// In component B, call setValue to let A run the callback
+eventNotifier.setValue('refetch');
+```
