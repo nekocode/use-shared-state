@@ -1,12 +1,6 @@
-import React, {
-  useContext,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-} from 'react';
-import { Listenable } from './change_notifier';
-export * from './change_notifier';
+import React, { useState, useRef, useCallback } from 'react';
+import { Listenable, useListen } from './listenable';
+export * from './listenable';
 
 export type ValueListener<T> = (current: T, prev: T) => void;
 
@@ -36,43 +30,24 @@ export class SharedState<T> extends Listenable<ValueListener<T>> {
   }
 }
 
-export function createSharedStateContext<T>(
-  sharedState: SharedState<T>,
-): React.Context<SharedState<T>> {
-  return React.createContext(sharedState);
-}
-
 /**
- * Hook a shared state
- *
- * @param context Context of shared state to hook
- * @param shouldUpdate Boolean or function to decide whether to re-render current component when the value of the shared state changes
- */
-export function useSharedState<T>(
-  context: React.Context<SharedState<T>>,
-  shouldUpdate: boolean | ((current: T, prev: T) => boolean) = true,
-): [T, React.Dispatch<React.SetStateAction<T>>, SharedState<T>] {
-  return useSharedStateDirectly(useContext(context), shouldUpdate);
-}
-
-/**
- * Hook a shared state
+ * Hook a shared state to component
  *
  * @param sharedState Shared state to hook
  * @param shouldUpdate Boolean or function to decide whether to re-render current component when the value of the shared state changes
  */
-export function useSharedStateDirectly<T>(
+export function useSharedState<T>(
   sharedState: SharedState<T>,
   shouldUpdate: boolean | ((current: T, prev: T) => boolean) = true,
-): [T, React.Dispatch<React.SetStateAction<T>>, SharedState<T>] {
+): [T, React.Dispatch<React.SetStateAction<T>>] {
   const updateState = useState<T>(sharedState.getValue())[1];
   const shouldUpdateRef = useRef<
     boolean | ((current: T, prev: T) => boolean)
   >();
   shouldUpdateRef.current = shouldUpdate;
 
-  useEffect(() => {
-    const listener = (current: T, prev: T) => {
+  const listener = useCallback(
+    (current: T, prev: T) => {
       const l = shouldUpdateRef.current;
       if (l === false || (l instanceof Function && !l(current, prev))) {
         // If the `shouldUpdate` is or returns false, do not update state
@@ -80,12 +55,11 @@ export function useSharedStateDirectly<T>(
       }
 
       updateState(current);
-    };
-    sharedState.addListener(listener);
-    return () => {
-      sharedState.removeListener(listener);
-    };
-  }, [sharedState, updateState]);
+    },
+    [updateState],
+  );
+
+  useListen(sharedState, listener);
 
   const setSharedState = useCallback(
     (v: React.SetStateAction<T>) => {
@@ -94,5 +68,5 @@ export function useSharedStateDirectly<T>(
     [sharedState],
   );
 
-  return [sharedState.getValue(), setSharedState, sharedState];
+  return [sharedState.getValue(), setSharedState];
 }

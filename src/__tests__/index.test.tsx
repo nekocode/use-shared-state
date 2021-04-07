@@ -1,12 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import ReactTestUtils from 'react-dom/test-utils';
-import {
-  SharedState,
-  createSharedStateContext,
-  useSharedState,
-  useSharedStateDirectly,
-} from '..';
+import { SharedState, useSharedState } from '..';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let container: HTMLElement | any;
@@ -51,10 +46,11 @@ describe('SharedState', () => {
 describe('useSharedState', () => {
   it('normalUsing', () => {
     const sharedState0 = new SharedState(0);
-    const Context = createSharedStateContext(sharedState0);
+    const Context = React.createContext(sharedState0);
 
     const Component1 = () => {
-      const [state, setState] = useSharedState(Context);
+      const sharedState = React.useContext(Context);
+      const [state, setState] = useSharedState(sharedState);
       const onClick = () => {
         setState((current) => current + 1);
       };
@@ -66,7 +62,7 @@ describe('useSharedState', () => {
     };
 
     const Component2 = () => {
-      const [state, setState] = useSharedStateDirectly(sharedState0, false);
+      const [state, setState] = useSharedState(sharedState0, false);
       const onClick = () => {
         setState((current) => current + 1);
       };
@@ -79,7 +75,7 @@ describe('useSharedState', () => {
 
     const Component3 = () => {
       const [state, setState] = useSharedState(
-        Context,
+        sharedState0,
         (current, prev) => current + prev === 3,
       );
       const onClick = () => {
@@ -143,11 +139,15 @@ describe('useSharedState', () => {
 
   it('on shouldUpdate changed', () => {
     const sharedState0 = new SharedState(0);
-    const Context = createSharedStateContext(sharedState0);
+    const Context = React.createContext(sharedState0);
 
     const Component1 = () => {
+      const sharedState = React.useContext(Context);
       const shouldUpdate = useRef(true);
-      const [state, setState] = useSharedState(Context, shouldUpdate.current);
+      const [state, setState] = useSharedState(
+        sharedState,
+        shouldUpdate.current,
+      );
       const onClick = () => {
         shouldUpdate.current = !shouldUpdate.current;
         setState((current) => current + 1);
@@ -162,7 +162,7 @@ describe('useSharedState', () => {
     const Component2 = () => {
       const shouldUpdate = useRef(true);
       const [state, setState] = useSharedState(
-        Context,
+        sharedState0,
         () => shouldUpdate.current,
       );
       const onClick = () => {
@@ -221,10 +221,9 @@ describe('useSharedState', () => {
 
   it('updating in useEffect', () => {
     const sharedState0 = new SharedState(0);
-    const Context = createSharedStateContext(sharedState0);
 
     const Component1 = () => {
-      const [state, setState] = useSharedState(Context);
+      const [state, setState] = useSharedState(sharedState0);
       useEffect(() => {
         setState((current) => current + 1);
       }, [setState]);
@@ -240,11 +239,7 @@ describe('useSharedState', () => {
     };
 
     const App = () => {
-      return (
-        <Context.Provider value={sharedState0}>
-          <Component1 />
-        </Context.Provider>
-      );
+      return <Component1 />;
     };
 
     ReactTestUtils.act(() => {

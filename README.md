@@ -6,7 +6,7 @@
 
 ***Why choose it?***
 
-1. It's lightweight, includes only less than 100 lines source code, so it's very suitable to use in component or library projects
+1. It's lightweight, includes just over a 100 lines of source code, so it's very suitable to use in component or library projects
 2. Update components in minimum range. Using the example below, if we share a shared-state with b and e components, then when this shared-state updates, only b and e components will be updated
 ```
   a
@@ -24,10 +24,11 @@ Live example:
 Simplest usage:
 
 ```tsx
-const CounterContext = createSharedStateContext(new SharedState(0));
+const CounterContext = React.createContext(new SharedState(0));
 
 const ComponentA = () => {
-  const [state, setState] = useSharedState(CounterContext);
+  const sharedState = React.useContext(CounterContext);
+  const [state, setState] = useSharedState(sharedState);
   return (
     <div>
       <div>state: {state}</div>
@@ -37,7 +38,8 @@ const ComponentA = () => {
 };
 
 const ComponentB = () => {
-  const [state] = useSharedState(CounterContext);
+  const sharedState = React.useContext(CounterContext);
+  const [state] = useSharedState(sharedState);
   return <div>state: {state}</div>;
 };
 
@@ -56,15 +58,11 @@ Advanced:
 ```tsx
 // Only get current state, will never update current component
 // (the second argument is like the shouldComponentUpdate)
-const [state, setState, sharedState] = useSharedState(CounterContext, false);
+const [state, setState] = useSharedState(sharedState, false);
 
 // Will update current component only when the value of state is bigger than 1
-const [state] = useSharedState(CounterContext, (current) => current > 1);
+const [state] = useSharedState(sharedState, (current) => current > 1);
 
 // Will update current component when the value of state changes
-const [state] = useSharedState(CounterContext, (current, prev) => current !== prev);
-
-// Hook a shared state instance directly
-const sharedState = getSharedStateFromSomewhere();
-const [state] = useSharedStateDirectly(sharedState);
+const [state] = useSharedState(sharedState, (current, prev) => current !== prev);
 ```
