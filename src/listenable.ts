@@ -19,7 +19,9 @@ export abstract class Listenable<L> {
   }
 }
 
-export class ChangeNotifier extends Listenable<() => void> {
+export type VoidListener = () => void;
+
+export class ChangeNotifier extends Listenable<VoidListener> {
   public notifyListeners(): void {
     if (!this.hasListeners()) {
       return;
@@ -31,7 +33,9 @@ export class ChangeNotifier extends Listenable<() => void> {
   }
 }
 
-export class ValueNotifier<T> extends ChangeNotifier {
+export type ValueListener<T> = (current: T, prev: T) => void;
+
+export class ValueNotifier<T> extends Listenable<ValueListener<T>> {
   public constructor(protected value: T) {
     super();
   }
@@ -40,9 +44,20 @@ export class ValueNotifier<T> extends ChangeNotifier {
     return this.value;
   }
 
-  public setValue(value: T): void {
-    this.value = value;
-    this.notifyListeners();
+  public setValue(value: T | ((current: T) => T)): void {
+    const previous = this.value;
+    this.value = value instanceof Function ? value(this.value) : value;
+    this.notifyListeners(this.value, previous);
+  }
+
+  public notifyListeners(current: T, previous: T): void {
+    if (!this.hasListeners()) {
+      return;
+    }
+
+    for (const listener of this._listeners) {
+      listener(current, previous);
+    }
   }
 }
 
@@ -52,10 +67,7 @@ export class ValueNotifier<T> extends ChangeNotifier {
  * @param listenable Listenable to hook
  * @param listener Bind the callback to listenable after component mounted and unbind it after component unmounted
  */
-export function useListen<T extends Listenable<L>, L>(
-  listenable: T,
-  listener: L,
-): void {
+export function useListen<L>(listenable: Listenable<L>, listener: L): void {
   useEffect(() => {
     listenable.addListener(listener);
     return () => {

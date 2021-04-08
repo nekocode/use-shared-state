@@ -1,34 +1,8 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Listenable, useListen } from './listenable';
+import { ValueNotifier, useListen } from './listenable';
 export * from './listenable';
 
-export type ValueListener<T> = (current: T, prev: T) => void;
-
-export class SharedState<T> extends Listenable<ValueListener<T>> {
-  public constructor(private value: T) {
-    super();
-  }
-
-  public getValue(): T {
-    return this.value;
-  }
-
-  public setValue(value: T | ((current: T) => T)): void {
-    const prev = this.value;
-    this.value = value instanceof Function ? value(this.value) : value;
-    this.notifyListeners(this.value, prev);
-  }
-
-  public notifyListeners(current: T, prev: T): void {
-    if (!this.hasListeners()) {
-      return;
-    }
-
-    for (const listener of this._listeners) {
-      listener(current, prev);
-    }
-  }
-}
+export class SharedState<T> extends ValueNotifier<T> {}
 
 /**
  * Hook a shared state to component

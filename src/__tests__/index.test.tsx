@@ -16,35 +16,8 @@ afterEach(() => {
   container = null;
 });
 
-describe('SharedState', () => {
-  it('getAndSet', () => {
-    const sharedState = new SharedState(1);
-    expect(sharedState.getValue()).toBe(1);
-    sharedState.setValue(0);
-    expect(sharedState.getValue()).toBe(0);
-    sharedState.setValue((i) => i + 1);
-    expect(sharedState.getValue()).toBe(1);
-  });
-
-  it('listeners', () => {
-    const sharedState = new SharedState(1);
-    let flag = 0;
-    const listener = (value: number) => {
-      flag++;
-      expect(value).toBe(0);
-    };
-    sharedState.addListener(listener);
-    sharedState.setValue(0);
-    expect(flag).toBe(1);
-
-    sharedState.removeListener(listener);
-    sharedState.setValue(1);
-    expect(flag).toBe(1);
-  });
-});
-
 describe('useSharedState', () => {
-  it('normalUsing', () => {
+  it('normal using', () => {
     const sharedState0 = new SharedState(0);
     const Context = React.createContext(sharedState0);
 

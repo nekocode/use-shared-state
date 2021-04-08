@@ -76,18 +76,18 @@ const listener = useCallback(() => {
   refetch();
 }, [refetch]);
 useListen(refetchNotifier, listener);
-// In component B, call notifyListeners() of refetchNotifier to let A run refetch()
+// In component B, call notifyListeners() to notify A to run refetch()
 refetchNotifier.notifyListeners();
 
 
-const eventNotifier = new ValueNotifier<string | undefined>(undefined)
+const eventNotifier = new ValueNotifier<string | null>(null);
 // In component A
-const listener = useCallback(() => {
-  if (eventNotifier.getValue() === 'refetch') {
+const listener = useCallback((event) => {
+  if (event === 'refetch') {
     refetch();
   }
-}, [eventNotifier, refetch]);
+}, [refetch]);
 useListen(eventNotifier, listener);
-// In component B, call setValue to let A run the callback
+// In component B, call setValue to notifier A to run the callback
 eventNotifier.setValue('refetch');
 ```

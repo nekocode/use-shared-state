@@ -17,69 +17,77 @@ afterEach(() => {
 });
 
 describe('ChangeNotifier', () => {
-  it('notifyListeners', () => {
-    const changeNotifier = new ChangeNotifier();
+  it('notify listeners', () => {
+    const notifier = new ChangeNotifier();
     let flag = 0;
     const listener = () => {
       flag++;
     };
-    changeNotifier.addListener(listener);
-    changeNotifier.notifyListeners();
+    notifier.addListener(listener);
+    notifier.notifyListeners();
     expect(flag).toBe(1);
 
-    changeNotifier.removeListener(listener);
-    changeNotifier.notifyListeners();
+    notifier.removeListener(listener);
+    notifier.notifyListeners();
     expect(flag).toBe(1);
   });
 });
 
 describe('ValueNotifier', () => {
-  it('getAndSet', () => {
-    const valueNotifier = new ValueNotifier(0);
-    let flag = 0;
-    const listener = () => {
-      flag++;
-    };
-    valueNotifier.addListener(listener);
-    valueNotifier.setValue(valueNotifier.getValue() + 1);
-    expect(flag).toBe(1);
-    expect(valueNotifier.getValue()).toBe(1);
+  it('get & set value', () => {
+    const notifier = new ValueNotifier(1);
+    expect(notifier.getValue()).toBe(1);
+    notifier.setValue(0);
+    expect(notifier.getValue()).toBe(0);
+    notifier.setValue((i) => i + 1);
+    expect(notifier.getValue()).toBe(1);
+  });
 
-    valueNotifier.removeListener(listener);
-    valueNotifier.setValue(valueNotifier.getValue() + 1);
+  it('listeners', () => {
+    const notifier = new ValueNotifier(1);
+    let flag = 0;
+    const listener = (value: number) => {
+      flag++;
+      expect(value).toBe(0);
+    };
+    notifier.addListener(listener);
+    notifier.setValue(0);
     expect(flag).toBe(1);
-    expect(valueNotifier.getValue()).toBe(2);
+
+    notifier.removeListener(listener);
+    notifier.setValue(1);
+    expect(flag).toBe(1);
   });
 });
 
 describe('useListen', () => {
-  it('normalUsing', () => {
-    const valueNotifier = new ValueNotifier(0);
-    const Context = createContext(valueNotifier);
+  it('normal using', () => {
+    const notifier = new ValueNotifier(0);
+    const Context = createContext(notifier);
 
     const Component1 = () => {
       const valueNotifier = useContext(Context);
-      const [value, setValue] = useState(valueNotifier.getValue());
-      useListen(valueNotifier, () => {
-        setValue(valueNotifier.getValue());
+      const [num, setNum] = useState(valueNotifier.getValue());
+      useListen(valueNotifier, (current) => {
+        setNum(current);
       });
-      return <div id="d1">{value}</div>;
+      return <div id="d1">{num}</div>;
     };
 
     const Component2 = () => {
       const onClick = () => {
-        valueNotifier.setValue(valueNotifier.getValue() + 1);
+        notifier.setValue((current) => current + 1);
       };
       return (
         <button id="b1" onClick={onClick}>
-          {valueNotifier.getValue()}
+          {notifier.getValue()}
         </button>
       );
     };
 
     const App = () => {
       return (
-        <Context.Provider value={valueNotifier}>
+        <Context.Provider value={notifier}>
           <Component1 />
           <Component2 />
         </Context.Provider>
@@ -91,7 +99,7 @@ describe('useListen', () => {
     });
     const div1 = container.querySelector('#d1');
     const button1 = container.querySelector('#b1');
-    expect(valueNotifier.getValue()).toBe(0);
+    expect(notifier.getValue()).toBe(0);
     expect(div1.textContent).toBe('0');
     expect(button1.textContent).toBe('0');
 
@@ -99,7 +107,7 @@ describe('useListen', () => {
     ReactTestUtils.act(() => {
       button1.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
-    expect(valueNotifier.getValue()).toBe(1);
+    expect(notifier.getValue()).toBe(1);
     expect(div1.textContent).toBe('1');
     expect(button1.textContent).toBe('0');
   });
