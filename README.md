@@ -1,4 +1,4 @@
-[![](https://api.travis-ci.org/nekocode/use-shared-state.svg?branch=master)](https://travis-ci.org/nekocode/use-shared-state) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/@nekocode/use-shared-state)
+[![npm](https://img.shields.io/npm/v/@nekocode/use-shared-state)](https://www.npmjs.com/package/@nekocode/use-shared-state) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/@nekocode/use-shared-state) [![](https://api.travis-ci.org/nekocode/use-shared-state.svg?branch=master)](https://travis-ci.org/nekocode/use-shared-state)
 
 :octopus: React hook for sharing state between components. Inspired by the [InheritedWidget](https://api.flutter.dev/flutter/widgets/InheritedWidget-class.html) in flutter.
 
@@ -20,6 +20,10 @@ b c d
 Live example:
 
 [![Edit useSharedState - example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/mystifying-cray-x2gcp?fontsize=14&hidenavigation=1&theme=dark)
+
+## Usage
+
+### 1. Share state between components
 
 Simplest usage:
 
@@ -67,27 +71,62 @@ const [state] = useSharedState(sharedState, (current) => current > 1);
 const [state] = useSharedState(sharedState, (current, prev) => current !== prev);
 ```
 
-`ChangeNotifier`, `ValueNotifier` & `useListen`:
+### 2. Notify event between components
+
+Use `ChangeNotifier`, `ValueNotifier` & `useListen` to notify another component to invoke some callbacks (please note that, unlike the `useSharedState`, `useListen` will not trigger the re-render of hooked component):
 
 ```tsx
 const refetchNotifier = new ChangeNotifier();
-// In component A
-const listener = useCallback(() => {
-  refetch();
-}, [refetch]);
-useListen(refetchNotifier, listener);
-// In component B, call notifyListeners() to notify A to run refetch()
-refetchNotifier.notifyListeners();
-
-
 const eventNotifier = new ValueNotifier<string | null>(null);
-// In component A
-const listener = useCallback((event) => {
-  if (event === 'refetch') {
+
+const ComponentA = () => {
+  // ...
+  const changeListener = useCallback(() => {
     refetch();
+  }, [refetch]);
+  const valueListener = useCallback((value) => {
+    if (value === 'setState') {
+      setState();
+    }
+  }, [setState]);
+  useListen(refetchNotifier, changeListener);
+  useListen(eventNotifier, valueListener);
+  // ...
+};
+
+// In component B, call notifyListeners/setValue to notify A to invoke callbacks
+const ComponentB = () => {
+  // ...
+  refetchNotifier.notifyListeners();
+  eventNotifier.setValue('setState');
+  // ...
+};
+```
+
+### 3. Create 'Controller' for controlling a component
+
+Like [controllers in flutter](https://stackoverflow.com/a/53668245), we can also create a controller class for managing states of children component:
+
+```tsx
+export class AController {
+  public title: SharedState<string>;
+  public loading: SharedState<boolean>;
+
+  constructor(initialTitle?: string, initialLoading?: boolean) {
+    this.title = new SharedState<string>(initialTitle ?? '');
+    this.loading = new SharedState<boolean>(initialLoading ?? false);
   }
-}, [refetch]);
-useListen(eventNotifier, listener);
-// In component B, call setValue to notifier A to run the callback
-eventNotifier.setValue('refetch');
+}
+
+export const A: React.FC<{ controller?: AController }> = ({ controller }) => {
+  const ctrl = useMemo(() => controller ?? new AController(), [controller]);
+  const [title] = useSharedState(ctrl.title);
+  const [loading] = useSharedState(ctrl.loading);
+
+  return (
+    <Spin spinning={loading}>
+      <div>{title}</div>
+    </Spin>
+  );
+};
 ```
