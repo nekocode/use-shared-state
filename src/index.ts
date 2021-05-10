@@ -14,7 +14,7 @@ export function useSharedState<T>(
   sharedState: SharedState<T>,
   shouldUpdate: boolean | ((current: T, prev: T) => boolean) = true,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const updateState = useState<T>(sharedState.getValue())[1];
+  const [, setState] = useState<T>(sharedState.getValue());
   const shouldUpdateRef = useRef<
     boolean | ((current: T, prev: T) => boolean)
   >();
@@ -22,19 +22,20 @@ export function useSharedState<T>(
 
   const listener = useCallback(
     (current: T, prev: T) => {
-      const l = shouldUpdateRef.current;
-      if (l === false || (l instanceof Function && !l(current, prev))) {
+      const f = shouldUpdateRef.current;
+      if (f === false || (f instanceof Function && !f(current, prev))) {
         // If the `shouldUpdate` is or returns false, do not update state
         return;
       }
 
-      updateState(current);
+      setState(current);
     },
-    [updateState],
+    [setState],
   );
 
   useListen(sharedState, listener);
 
+  // return the same function object between renderings
   const setSharedState = useCallback(
     (v: React.SetStateAction<T>) => {
       sharedState.setValue(v);

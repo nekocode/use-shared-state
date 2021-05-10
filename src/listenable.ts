@@ -23,10 +23,7 @@ export type VoidListener = () => void;
 
 export class ChangeNotifier extends Listenable<VoidListener> {
   public notifyListeners(): void {
-    if (!this.hasListeners()) {
-      return;
-    }
-
+    if (!this.hasListeners()) return;
     for (const listener of this._listeners) {
       listener();
     }
@@ -51,10 +48,7 @@ export class ValueNotifier<T> extends Listenable<ValueListener<T>> {
   }
 
   public notifyListeners(current: T, previous: T): void {
-    if (!this.hasListeners()) {
-      return;
-    }
-
+    if (!this.hasListeners()) return;
     for (const listener of this._listeners) {
       listener(current, previous);
     }
