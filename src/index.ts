@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { ValueNotifier, useListen } from './listenable';
 export * from './listenable';
 
@@ -12,28 +12,30 @@ export class SharedState<T> extends ValueNotifier<T> {}
  */
 export function useSharedState<T>(
   sharedState: SharedState<T>,
-  shouldUpdate: boolean | ((current: T, prev: T) => boolean) = true,
+  shouldUpdate: boolean | ((current: T, previous: T) => boolean) = true,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const [, setState] = useState<T>(sharedState.getValue());
-  const shouldUpdateRef = useRef<
-    boolean | ((current: T, prev: T) => boolean)
-  >();
+  const initialState = useMemo(() => sharedState.getValue(), [sharedState]);
+  const [, setState] = useState<T>(initialState);
+  const shouldUpdateRef = useRef(shouldUpdate);
   shouldUpdateRef.current = shouldUpdate;
 
-  const listener = useCallback(
-    (current: T, prev: T) => {
-      const f = shouldUpdateRef.current;
-      if (f === false || (f instanceof Function && !f(current, prev))) {
-        // If the `shouldUpdate` is or returns false, do not update state
-        return;
-      }
+  const listener = useCallback((current: T, previous: T) => {
+    const f = shouldUpdateRef.current;
+    if (f === false || (f instanceof Function && !f(current, previous))) {
+      // If the `shouldUpdate` is or returns false, do not update state
+      return;
+    }
+    setState(current);
+  }, []);
 
-      setState(current);
-    },
-    [setState],
-  );
+  const afterListen = useCallback(() => {
+    // If the state changed before the listener is added, try to re-render
+    if (sharedState.getValue() !== initialState) {
+      listener(sharedState.getValue(), initialState);
+    }
+  }, [sharedState, initialState, listener]);
 
-  useListen(sharedState, listener);
+  useListen(sharedState, listener, afterListen);
 
   // return the same function object between renderings
   const setSharedState = useCallback(

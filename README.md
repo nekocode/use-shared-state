@@ -1,4 +1,4 @@
-[![npm](https://img.shields.io/npm/v/@nekocode/use-shared-state)](https://www.npmjs.com/package/@nekocode/use-shared-state) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/@nekocode/use-shared-state) [![](https://api.travis-ci.org/nekocode/use-shared-state.svg?branch=master)](https://travis-ci.org/nekocode/use-shared-state)
+[![npm](https://img.shields.io/npm/v/@nekocode/use-shared-state)](https://www.npmjs.com/package/@nekocode/use-shared-state) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/@nekocode/use-shared-state) [![](https://api.travis-ci.com/nekocode/use-shared-state.svg?branch=master)](https://travis-ci.com/nekocode/use-shared-state)
 
 :octopus: React hook for sharing state between components. Inspired by the [InheritedWidget](https://api.flutter.dev/flutter/widgets/InheritedWidget-class.html) in flutter.
 

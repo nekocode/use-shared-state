@@ -229,4 +229,40 @@ describe('useSharedState', () => {
     expect(sharedState0.getValue()).toBe(2);
     expect(button1.textContent).toBe('2');
   });
+
+  it('change state before the listener is added', () => {
+    const sharedState0 = new SharedState(0);
+
+    const Component1 = () => {
+      const [state, setState] = useSharedState(sharedState0);
+      useEffect(() => {
+        setState((current) => current + 1);
+      }, [setState]);
+
+      return <div id="d1">{state}</div>;
+    };
+
+    const Component2 = () => {
+      const [state] = useSharedState(sharedState0);
+      return <div id="d2">{state}</div>;
+    };
+
+    const App = () => {
+      return (
+        <div>
+          <Component1 />
+          <Component2 />
+        </div>
+      );
+    };
+
+    ReactTestUtils.act(() => {
+      ReactDOM.render(<App />, container);
+    });
+    const div1 = container.querySelector('#d1');
+    const div2 = container.querySelector('#d2');
+    expect(sharedState0.getValue()).toBe(1);
+    expect(div1.textContent).toBe('1');
+    expect(div2.textContent).toBe('1');
+  });
 });

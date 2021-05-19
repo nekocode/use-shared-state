@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export abstract class Listenable<L> {
   protected _listeners = Array<L>();
@@ -30,7 +30,7 @@ export class ChangeNotifier extends Listenable<VoidListener> {
   }
 }
 
-export type ValueListener<T> = (current: T, prev: T) => void;
+export type ValueListener<T> = (current: T, previous: T) => void;
 
 export class ValueNotifier<T> extends Listenable<ValueListener<T>> {
   public constructor(protected value: T) {
@@ -61,9 +61,19 @@ export class ValueNotifier<T> extends Listenable<ValueListener<T>> {
  * @param listenable Listenable to hook
  * @param listener Bind the callback to listenable after component mounted and unbind it after component unmounted
  */
-export function useListen<L>(listenable: Listenable<L>, listener: L): void {
+export function useListen<L>(
+  listenable: Listenable<L>,
+  listener: L,
+  afterListen?: () => void,
+): void {
+  const afterListenRef = useRef(afterListen);
+  afterListenRef.current = afterListen;
+
   useEffect(() => {
     listenable.addListener(listener);
+    if (afterListenRef.current) {
+      afterListenRef.current();
+    }
     return () => {
       listenable.removeListener(listener);
     };
