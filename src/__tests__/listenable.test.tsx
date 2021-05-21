@@ -117,4 +117,59 @@ describe('useListen', () => {
     expect(div1.textContent).toBe('1');
     expect(button1.textContent).toBe('0');
   });
+
+  it('onListen', () => {
+    const changeNotifier = new ChangeNotifier();
+    const valueNotifier = new ValueNotifier(0);
+
+    const Component1 = () => {
+      useListen(
+        changeNotifier,
+        useCallback(() => {
+          valueNotifier.setValue((n) => ++n);
+        }, []),
+        useCallback(() => {
+          valueNotifier.setValue((n) => ++n);
+          return () => {
+            valueNotifier.setValue(() => 0);
+          };
+        }, []),
+      );
+      return <div />;
+    };
+
+    const App = () => {
+      const [destoried, setDestoried] = useState(false);
+      const onClick = () => {
+        setDestoried(true);
+      };
+      return (
+        <>
+          {destoried ? <></> : <Component1 />}
+          <button id="b1" onClick={onClick} />
+        </>
+      );
+    };
+
+    expect(valueNotifier.getValue()).toBe(0);
+
+    ReactTestUtils.act(() => {
+      ReactDOM.render(<App />, container);
+    });
+    const button1 = container.querySelector('#b1');
+    // After listener is added
+    expect(valueNotifier.getValue()).toBe(1);
+
+    // Notify listeners
+    ReactTestUtils.act(() => {
+      changeNotifier.notifyListeners();
+    });
+    expect(valueNotifier.getValue()).toBe(2);
+
+    // Unmount component 1
+    ReactTestUtils.act(() => {
+      button1.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(valueNotifier.getValue()).toBe(0);
+  });
 });

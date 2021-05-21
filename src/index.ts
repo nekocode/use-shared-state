@@ -28,14 +28,14 @@ export function useSharedState<T>(
     setState(current);
   }, []);
 
-  const afterListen = useCallback(() => {
-    // If the state changed before the listener is added, try to re-render
+  const onListen = useCallback(() => {
+    // If the state changed before the listener is added, notify the listener
     if (sharedState.getValue() !== initialState) {
       listener(sharedState.getValue(), initialState);
     }
-  }, [sharedState, initialState, listener]);
+  }, [initialState, sharedState, listener]);
 
-  useListen(sharedState, listener, afterListen);
+  useListen(sharedState, listener, onListen);
 
   // return the same function object between renderings
   const setSharedState = useCallback(

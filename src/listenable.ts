@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 export abstract class Listenable<L> {
   protected _listeners = Array<L>();
@@ -64,18 +64,19 @@ export class ValueNotifier<T> extends Listenable<ValueListener<T>> {
 export function useListen<L>(
   listenable: Listenable<L>,
   listener: L,
-  afterListen?: () => void,
+  onListen?: () => void | (() => void),
 ): void {
-  const afterListenRef = useRef(afterListen);
-  afterListenRef.current = afterListen;
-
   useEffect(() => {
     listenable.addListener(listener);
-    if (afterListenRef.current) {
-      afterListenRef.current();
+    let onRemove: void | (() => void) | undefined;
+    if (onListen) {
+      onRemove = onListen();
     }
     return () => {
       listenable.removeListener(listener);
+      if (onRemove) {
+        onRemove();
+      }
     };
-  }, [listenable, listener]);
+  }, [listenable, listener, onListen]);
 }
