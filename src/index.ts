@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { ValueNotifier, useListen } from './listenable';
 export * from './listenable';
 
@@ -14,8 +14,9 @@ export function useSharedState<T>(
   sharedState: SharedState<T>,
   shouldUpdate: boolean | ((current: T, previous: T) => boolean) = true,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const initialState = useMemo(() => sharedState.getValue(), [sharedState]);
-  const [, setState] = useState<T>(initialState);
+  const [state, setState] = useState<T>(sharedState.getValue());
+  const stateRef = useRef(state);
+  stateRef.current = state;
   const shouldUpdateRef = useRef(shouldUpdate);
   shouldUpdateRef.current = shouldUpdate;
 
@@ -30,10 +31,10 @@ export function useSharedState<T>(
 
   const onListen = useCallback(() => {
     // If the state changed before the listener is added, notify the listener
-    if (sharedState.getValue() !== initialState) {
-      listener(sharedState.getValue(), initialState);
+    if (sharedState.getValue() !== stateRef.current) {
+      listener(sharedState.getValue(), stateRef.current);
     }
-  }, [initialState, sharedState, listener]);
+  }, [sharedState, listener]);
 
   useListen(sharedState, listener, onListen);
 
