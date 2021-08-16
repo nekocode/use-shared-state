@@ -17,6 +17,8 @@ b c d
     e
 ```
 
+*相关文章: [use-shared-state 源码阅读](https://github.com/acfasj/blog/issues/3)*
+
 Live example:
 
 [![Edit useSharedState - example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/mystifying-cray-x2gcp?fontsize=14&hidenavigation=1&theme=dark)
