@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import ReactTestUtils from 'react-dom/test-utils';
 import { ChangeNotifier, useListen, ValueNotifier } from '../listenable';
 
@@ -101,7 +101,7 @@ describe('useListen', () => {
     };
 
     ReactTestUtils.act(() => {
-      ReactDOM.render(<App />, container);
+      ReactDOM.createRoot(container).render(<App />);
     });
     const div1 = container.querySelector('#d1');
     const button1 = container.querySelector('#b1');
@@ -154,7 +154,7 @@ describe('useListen', () => {
     expect(valueNotifier.getValue()).toBe(0);
 
     ReactTestUtils.act(() => {
-      ReactDOM.render(<App />, container);
+      ReactDOM.createRoot(container).render(<App />);
     });
     const button1 = container.querySelector('#b1');
     // After listener is added

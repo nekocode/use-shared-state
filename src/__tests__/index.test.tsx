@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import ReactTestUtils from 'react-dom/test-utils';
 import { SharedState, useSharedState } from '..';
 
@@ -72,7 +72,7 @@ describe('useSharedState', () => {
     };
 
     ReactTestUtils.act(() => {
-      ReactDOM.render(<App />, container);
+      ReactDOM.createRoot(container).render(<App />);
     });
     const button1 = container.querySelector('#b1');
     const button2 = container.querySelector('#b2');
@@ -159,7 +159,7 @@ describe('useSharedState', () => {
     };
 
     ReactTestUtils.act(() => {
-      ReactDOM.render(<App />, container);
+      ReactDOM.createRoot(container).render(<App />);
     });
     const button1 = container.querySelector('#b1');
     const button2 = container.querySelector('#b2');
@@ -216,7 +216,7 @@ describe('useSharedState', () => {
     };
 
     ReactTestUtils.act(() => {
-      ReactDOM.render(<App />, container);
+      ReactDOM.createRoot(container).render(<App />);
     });
     const button1 = container.querySelector('#b1');
     expect(sharedState0.getValue()).toBe(1);
@@ -257,7 +257,7 @@ describe('useSharedState', () => {
     };
 
     ReactTestUtils.act(() => {
-      ReactDOM.render(<App />, container);
+      ReactDOM.createRoot(container).render(<App />);
     });
     const div1 = container.querySelector('#d1');
     const div2 = container.querySelector('#d2');
