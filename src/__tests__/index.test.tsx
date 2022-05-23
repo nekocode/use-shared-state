@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import ReactTestUtils from 'react-dom/test-utils';
-import { SharedState, useSharedState } from '..';
+import { SharedState, useSharedState } from '../index';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let container: HTMLElement | any;
