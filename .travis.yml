@@ -6,7 +6,7 @@ cache:
   directories:
     - ~/.npm
 node_js:
-  - '10'
+  - '14'
 script:
   - yarn test
   - yarn build
