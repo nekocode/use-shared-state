@@ -7,8 +7,11 @@ export abstract class Listenable<L> {
     return this._listeners.length > 0;
   }
 
-  public addListener(listener: L): void {
+  public addListener(listener: L): () => void {
     this._listeners.push(listener);
+    return () => {
+      this.removeListener(listener);
+    };
   }
 
   public removeListener(listener: L): void {

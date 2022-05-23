@@ -23,13 +23,21 @@ describe('ChangeNotifier', () => {
     const listener = () => {
       flag++;
     };
-    notifier.addListener(listener);
+    const unListen = notifier.addListener(listener);
     notifier.notifyListeners();
     expect(flag).toBe(1);
 
-    notifier.removeListener(listener);
+    unListen();
     notifier.notifyListeners();
     expect(flag).toBe(1);
+
+    notifier.addListener(listener);
+    notifier.notifyListeners();
+    expect(flag).toBe(2);
+
+    notifier.removeListener(listener);
+    notifier.notifyListeners();
+    expect(flag).toBe(2);
   });
 });
 
