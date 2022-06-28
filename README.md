@@ -83,16 +83,12 @@ const eventNotifier = new ValueNotifier<string | null>(null);
 
 const ComponentA = () => {
   // ...
-  const changeListener = useCallback(() => {
-    refetch();
-  }, [refetch]);
-  const valueListener = useCallback((value) => {
+  useListen(refetchNotifier, () => refetch());
+  useListen(eventNotifier, (value) => {
     if (value === 'setState') {
       setState();
     }
-  }, [setState]);
-  useListen(refetchNotifier, changeListener);
-  useListen(eventNotifier, valueListener);
+  });
   // ...
 };
 
