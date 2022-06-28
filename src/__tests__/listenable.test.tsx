@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import ReactTestUtils from 'react-dom/test-utils';
 import { ChangeNotifier, useListen, ValueNotifier } from '../listenable';
@@ -76,15 +76,9 @@ describe('useListen', () => {
     const Component1 = () => {
       const valueNotifier = useContext(Context);
       const [num, setNum] = useState(valueNotifier.getValue());
-      useListen(
-        valueNotifier,
-        useCallback(
-          (current) => {
-            setNum(current);
-          },
-          [setNum],
-        ),
-      );
+      useListen(valueNotifier, (current) => {
+        setNum(current);
+      });
       return <div id="d1">{num}</div>;
     };
 
@@ -133,15 +127,15 @@ describe('useListen', () => {
     const Component1 = () => {
       useListen(
         changeNotifier,
-        useCallback(() => {
+        () => {
           valueNotifier.setValue((n) => ++n);
-        }, []),
-        useCallback(() => {
+        },
+        () => {
           valueNotifier.setValue((n) => ++n);
-          return () => {
-            valueNotifier.setValue(() => 0);
-          };
-        }, []),
+        },
+        () => {
+          valueNotifier.setValue(() => 0);
+        },
       );
       return <div />;
     };

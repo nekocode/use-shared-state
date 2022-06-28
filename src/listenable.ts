@@ -1,20 +1,22 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
-export abstract class Listenable<L> {
-  protected _listeners = Array<L>();
+export type Listener<P extends Array<unknown>> = (...prarms: P) => void;
+
+export abstract class Listenable<P extends Array<unknown>> {
+  protected _listeners = Array<Listener<P>>();
 
   public hasListeners(): boolean {
     return this._listeners.length > 0;
   }
 
-  public addListener(listener: L): () => void {
+  public addListener(listener: Listener<P>): () => void {
     this._listeners.push(listener);
     return () => {
       this.removeListener(listener);
     };
   }
 
-  public removeListener(listener: L): void {
+  public removeListener(listener: Listener<P>): void {
     const index = this._listeners.indexOf(listener);
     if (index > -1) {
       this._listeners.splice(index, 1);
@@ -22,9 +24,7 @@ export abstract class Listenable<L> {
   }
 }
 
-export type VoidListener = () => void;
-
-export class ChangeNotifier extends Listenable<VoidListener> {
+export class ChangeNotifier extends Listenable<[void]> {
   public notifyListeners(): void {
     if (!this.hasListeners()) return;
     for (const listener of this._listeners) {
@@ -33,9 +33,7 @@ export class ChangeNotifier extends Listenable<VoidListener> {
   }
 }
 
-export type ValueListener<T> = (current: T, previous: T) => void;
-
-export class ValueNotifier<T> extends Listenable<ValueListener<T>> {
+export class ValueNotifier<T> extends Listenable<[T, T]> {
   public constructor(protected value: T) {
     super();
   }
@@ -58,28 +56,38 @@ export class ValueNotifier<T> extends Listenable<ValueListener<T>> {
   }
 }
 
-/**
- * Hook a callback to component
- *
- * @param listenable Listenable to hook
- * @param listener Bind the callback to listenable after component mounted and unbind it after component unmounted
- */
-export function useListen<L>(
-  listenable: Listenable<L>,
-  listener: L,
-  onListen?: () => void | (() => void),
+export function useListen<P extends Array<unknown>>(
+  listenable: Listenable<P>,
+  listener: Listener<P>,
+  onListen?: () => void,
+  onRemmove?: () => void,
 ): void {
+  const listenerRef = useRef(listener);
+  listenerRef.current = listener;
+  const onListenRef = useRef(onListen);
+  onListenRef.current = onListen;
+  const onRemoveRef = useRef(onRemmove);
+  onRemoveRef.current = onRemmove;
+
+  const consistentListener = useCallback(
+    (...prarms: P) => {
+      if (listenerRef.current) {
+        listenerRef.current(...prarms);
+      }
+    },
+    [listenerRef],
+  );
+
   useEffect(() => {
-    listenable.addListener(listener);
-    let onRemove: void | (() => void) | undefined;
-    if (onListen) {
-      onRemove = onListen();
+    listenable.addListener(consistentListener);
+    if (onListenRef.current) {
+      onListenRef.current();
     }
     return () => {
-      listenable.removeListener(listener);
-      if (onRemove) {
-        onRemove();
+      listenable.removeListener(consistentListener);
+      if (onRemoveRef.current) {
+        onRemoveRef.current();
       }
     };
-  }, [listenable, listener, onListen]);
+  }, [listenable, consistentListener, onListenRef, onRemoveRef]);
 }
