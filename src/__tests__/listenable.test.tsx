@@ -19,25 +19,25 @@ afterEach(() => {
 describe('ChangeNotifier', () => {
   it('notify listeners', () => {
     const notifier = new ChangeNotifier();
-    let flag = 0;
+    let notifyTimes = 0;
     const listener = () => {
-      flag++;
+      notifyTimes++;
     };
     const unListen = notifier.addListener(listener);
     notifier.notifyListeners();
-    expect(flag).toBe(1);
+    expect(notifyTimes).toBe(1);
 
     unListen();
     notifier.notifyListeners();
-    expect(flag).toBe(1);
+    expect(notifyTimes).toBe(1);
 
     notifier.addListener(listener);
     notifier.notifyListeners();
-    expect(flag).toBe(2);
+    expect(notifyTimes).toBe(2);
 
     notifier.removeListener(listener);
     notifier.notifyListeners();
-    expect(flag).toBe(2);
+    expect(notifyTimes).toBe(2);
   });
 });
 
@@ -53,18 +53,24 @@ describe('ValueNotifier', () => {
 
   it('listeners', () => {
     const notifier = new ValueNotifier(1);
-    let flag = 0;
+    let notifyTimes = 0;
     const listener = (value: number) => {
-      flag++;
+      notifyTimes++;
       expect(value).toBe(0);
     };
     notifier.addListener(listener);
     notifier.setValue(0);
-    expect(flag).toBe(1);
+    expect(notifier.getValue()).toBe(0);
+    expect(notifyTimes).toBe(1);
+
+    notifier.setValue(1, false);
+    expect(notifier.getValue()).toBe(1);
+    expect(notifyTimes).toBe(1);
 
     notifier.removeListener(listener);
-    notifier.setValue(1);
-    expect(flag).toBe(1);
+    notifier.setValue(2);
+    expect(notifier.getValue()).toBe(2);
+    expect(notifyTimes).toBe(1);
   });
 });
 

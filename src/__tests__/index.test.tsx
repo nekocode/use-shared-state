@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 describe('useSharedState', () => {
-  it('normal using', () => {
+  it('normal use', () => {
     const sharedState0 = new SharedState(0);
     const Context = React.createContext(sharedState0);
 
@@ -110,7 +110,7 @@ describe('useSharedState', () => {
     expect(button3.textContent).toBe('2');
   });
 
-  it('on shouldUpdate changed', () => {
+  it('if shouldUpdate changes', () => {
     const sharedState0 = new SharedState(0);
     const Context = React.createContext(sharedState0);
 
@@ -192,7 +192,7 @@ describe('useSharedState', () => {
     expect(button2.textContent).toBe('1');
   });
 
-  it('updating in useEffect', () => {
+  it('set state in useEffect', () => {
     const sharedState0 = new SharedState(0);
 
     const Component1 = () => {
@@ -230,7 +230,7 @@ describe('useSharedState', () => {
     expect(button1.textContent).toBe('2');
   });
 
-  it('change state before the listener is added', () => {
+  it('change state before all listeners have been added', () => {
     const sharedState0 = new SharedState(0);
 
     const Component1 = () => {
@@ -264,5 +264,65 @@ describe('useSharedState', () => {
     expect(sharedState0.getValue()).toBe(1);
     expect(div1.textContent).toBe('1');
     expect(div2.textContent).toBe('1');
+  });
+
+  it('pass null to the first parameter', () => {
+    const sharedState0 = new SharedState<SharedState<number> | null>(null);
+
+    const Component1 = () => {
+      const [sharedState1] = useSharedState(sharedState0);
+      const [state, setState] = useSharedState(sharedState1, true, 10);
+      return (
+        <>
+          <button id="b1" onClick={() => setState((i) => ++i)} />
+          <div id="d1">{state}</div>
+        </>
+      );
+    };
+
+    const Component2 = () => {
+      const [, setState] = useSharedState(sharedState0);
+      return (
+        <button id="b2" onClick={() => setState(new SharedState<number>(0))} />
+      );
+    };
+
+    const App = () => {
+      return (
+        <div>
+          <Component1 />
+          <Component2 />
+        </div>
+      );
+    };
+
+    ReactTestUtils.act(() => {
+      ReactDOM.createRoot(container).render(<App />);
+    });
+    const button1 = container.querySelector('#b1');
+    const button2 = container.querySelector('#b2');
+    const div1 = container.querySelector('#d1');
+    expect(sharedState0.getValue()).toBeNull();
+    expect(div1.textContent).toBe('10');
+
+    // Click button1
+    ReactTestUtils.act(() => {
+      button1.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(sharedState0.getValue()).toBeNull();
+    expect(div1.textContent).toBe('11');
+
+    // Click button2
+    ReactTestUtils.act(() => {
+      button2.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(sharedState0.getValue()).not.toBeNull();
+    expect(div1.textContent).toBe('0');
+
+    // Click button1
+    ReactTestUtils.act(() => {
+      button1.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(div1.textContent).toBe('1');
   });
 });

@@ -42,10 +42,12 @@ export class ValueNotifier<T> extends Listenable<[T, T]> {
     return this.value;
   }
 
-  public setValue(value: T | ((current: T) => T)): void {
+  public setValue(value: T | ((current: T) => T), notify = true): void {
     const previous = this.value;
     this.value = value instanceof Function ? value(this.value) : value;
-    this.notifyListeners(this.value, previous);
+    if (notify) {
+      this.notifyListeners(this.value, previous);
+    }
   }
 
   public notifyListeners(current: T, previous: T): void {
@@ -59,15 +61,15 @@ export class ValueNotifier<T> extends Listenable<[T, T]> {
 export function useListen<P extends Array<unknown>>(
   listenable: Listenable<P>,
   listener: Listener<P>,
-  onListen?: () => void,
-  onRemmove?: () => void,
+  afterListen?: () => void,
+  afterUnlisten?: () => void,
 ): void {
   const listenerRef = useRef(listener);
   listenerRef.current = listener;
-  const onListenRef = useRef(onListen);
-  onListenRef.current = onListen;
-  const onRemoveRef = useRef(onRemmove);
-  onRemoveRef.current = onRemmove;
+  const afterListenRef = useRef(afterListen);
+  afterListenRef.current = afterListen;
+  const afterUnlistenRef = useRef(afterUnlisten);
+  afterUnlistenRef.current = afterUnlisten;
 
   const consistentListener = useCallback(
     (...prarms: P) => {
@@ -80,14 +82,14 @@ export function useListen<P extends Array<unknown>>(
 
   useEffect(() => {
     listenable.addListener(consistentListener);
-    if (onListenRef.current) {
-      onListenRef.current();
+    if (afterListenRef.current) {
+      afterListenRef.current();
     }
     return () => {
       listenable.removeListener(consistentListener);
-      if (onRemoveRef.current) {
-        onRemoveRef.current();
+      if (afterUnlistenRef.current) {
+        afterUnlistenRef.current();
       }
     };
-  }, [listenable, consistentListener, onListenRef, onRemoveRef]);
+  }, [listenable, consistentListener, afterListenRef, afterUnlistenRef]);
 }

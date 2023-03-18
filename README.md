@@ -1,13 +1,14 @@
 [![npm](https://img.shields.io/npm/v/@nekocode/use-shared-state)](https://www.npmjs.com/package/@nekocode/use-shared-state) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/@nekocode/use-shared-state) [![](https://api.travis-ci.com/nekocode/use-shared-state.svg?branch=master)](https://travis-ci.com/nekocode/use-shared-state)
 
-:octopus: React hook for sharing state between components. Inspired by the [InheritedWidget](https://api.flutter.dev/flutter/widgets/InheritedWidget-class.html) in flutter.
+:octopus: React hook for sharing state between components, inspired by the [InheritedWidget](https://api.flutter.dev/flutter/widgets/InheritedWidget-class.html) in Flutter.
 
 `yarn add @nekocode/use-shared-state`
 
-***Why choose it?***
+**_Why choose it?_**
 
-1. It's lightweight, includes just over a 100 lines of source code, so it's very suitable to use in component or library projects
-2. Update components in minimum range. Using the example below, if we share a shared-state with b and e components, then when this shared-state updates, only b and e components will be updated
+1. It's lightweight and includes just over 100 lines of source code, making it very suitable for use in component or library projects
+2. Update components within a minimum range. For example, if we share a shared-state with components b and e, only these components will be updated when the shared-state updates
+
 ```
   a
 +-+-+
@@ -17,9 +18,9 @@ b c d
     e
 ```
 
-*相关文章: [use-shared-state 源码阅读](https://github.com/acfasj/blog/issues/3)*
+_相关文章: [use-shared-state 源码阅读](https://github.com/acfasj/blog/issues/3)_
 
-Live example:
+Live demo:
 
 [![Edit useSharedState - example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/mystifying-cray-x2gcp?fontsize=14&hidenavigation=1&theme=dark)
 
@@ -27,7 +28,7 @@ Live example:
 
 ### 1. Share state between components
 
-Simplest usage:
+The simplest usage:
 
 ```tsx
 const CounterContext = React.createContext(new SharedState(0));
@@ -56,26 +57,30 @@ const App = () => {
       <ComponentB />
     </CounterContext.Provider>
   );
-}
+};
 ```
 
-Advanced:
+Advanced usage:
 
 ```tsx
-// Only get current state, will never update current component
-// (the second argument is like the shouldComponentUpdate)
+const sharedSate = useMemo(() => new SharedState(0), []);
+
+// Only retrieve the current state value, the component will never be updated
 const [state, setState] = useSharedState(sharedState, false);
 
-// Will update current component only when the value of state is bigger than 1
-const [state] = useSharedState(sharedState, (current) => current > 1);
+// Update the component only when the current state value is greater than 1
+const [state] = useSharedState(sharedState, (current, prev) => current > 1);
 
-// Will update current component when the value of state changes
-const [state] = useSharedState(sharedState, (current, prev) => current !== prev);
+// Change the value of the shared state without updating hooked components
+sharedState.setValue(1, false);
+
+// When the first parameter (shared state) is null, use 1 as the initial state value
+const [state] = useSharedState(null, true, 1);
 ```
 
 ### 2. Notify event between components
 
-Use `ChangeNotifier`, `ValueNotifier` & `useListen` to notify another component to invoke some callbacks (please note that, unlike the `useSharedState`, `useListen` will not trigger the re-render of hooked component):
+Use `ChangeNotifier`, `ValueNotifier`, and `useListen` to notify another component to invoke some callbacks. Please note that, unlike `useSharedState`, `useListen` will not trigger the re-rendering of the hooked component:
 
 ```tsx
 const refetchNotifier = new ChangeNotifier();
@@ -92,39 +97,11 @@ const ComponentA = () => {
   // ...
 };
 
-// In component B, call notifyListeners/setValue to notify A to invoke callbacks
+// In component B, call notifyListeners/setValue to notify A
 const ComponentB = () => {
   // ...
   refetchNotifier.notifyListeners();
   eventNotifier.setValue('setState');
   // ...
-};
-```
-
-### 3. Create 'Controller' for controlling a component
-
-Like [controllers in flutter](https://stackoverflow.com/a/53668245), we can also create a controller class for managing states of children component:
-
-```tsx
-export class AController {
-  public title: SharedState<string>;
-  public loading: SharedState<boolean>;
-
-  constructor(initialTitle?: string, initialLoading?: boolean) {
-    this.title = new SharedState<string>(initialTitle ?? '');
-    this.loading = new SharedState<boolean>(initialLoading ?? false);
-  }
-}
-
-export const A: React.FC<{ controller?: AController }> = ({ controller }) => {
-  const ctrl = useMemo(() => controller ?? new AController(), [controller]);
-  const [title] = useSharedState(ctrl.title);
-  const [loading] = useSharedState(ctrl.loading);
-
-  return (
-    <Spin spinning={loading}>
-      <div>{title}</div>
-    </Spin>
-  );
 };
 ```
