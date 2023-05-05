@@ -66,13 +66,14 @@ Advanced usage:
 const sharedSate = useMemo(() => new SharedState(0), []);
 
 // Only retrieve the current state value, the component will never be updated
-const [state, setState] = useSharedState(sharedState, false);
+const [state] = useSharedState(sharedState, false);
 
 // Update the component only when the current state value is greater than 1
 const [state] = useSharedState(sharedState, (current, prev) => current > 1);
 
 // Change the value of the shared state without updating hooked components
-sharedState.setValue(1, false);
+const [, setState] = useSharedState(sharedState);
+setState(1, false);
 
 // When the first parameter (shared state) is null, use 1 as the initial state value
 const [state] = useSharedState(null, true, 1);

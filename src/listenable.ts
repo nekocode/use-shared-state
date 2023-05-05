@@ -22,16 +22,16 @@ export abstract class Listenable<P extends Array<unknown>> {
       this._listeners.splice(index, 1);
     }
   }
-}
 
-export class ChangeNotifier extends Listenable<[void]> {
-  public notifyListeners(): void {
+  public notifyListeners(...params: P): void {
     if (!this.hasListeners()) return;
     for (const listener of this._listeners) {
-      listener();
+      listener(...params);
     }
   }
 }
+
+export class ChangeNotifier extends Listenable<[]> {}
 
 export class ValueNotifier<T> extends Listenable<[T, T]> {
   public constructor(protected value: T) {
@@ -49,17 +49,10 @@ export class ValueNotifier<T> extends Listenable<[T, T]> {
       this.notifyListeners(this.value, previous);
     }
   }
-
-  public notifyListeners(current: T, previous: T): void {
-    if (!this.hasListeners()) return;
-    for (const listener of this._listeners) {
-      listener(current, previous);
-    }
-  }
 }
 
 export function useListen<P extends Array<unknown>>(
-  listenable: Listenable<P>,
+  listenable: Listenable<P> | undefined | null,
   listener: Listener<P>,
   afterListen?: () => void,
   afterUnlisten?: () => void,
@@ -81,12 +74,12 @@ export function useListen<P extends Array<unknown>>(
   );
 
   useEffect(() => {
-    listenable.addListener(consistentListener);
+    listenable?.addListener(consistentListener);
     if (afterListenRef.current) {
       afterListenRef.current();
     }
     return () => {
-      listenable.removeListener(consistentListener);
+      listenable?.removeListener(consistentListener);
       if (afterUnlistenRef.current) {
         afterUnlistenRef.current();
       }

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { ValueNotifier, useListen } from './listenable';
 export * from './listenable';
 
@@ -14,17 +14,17 @@ export class SharedState<T> extends ValueNotifier<T> {}
 export function useSharedState<T>(
   sharedState: SharedState<T>,
   shouldUpdate?: boolean | ((current: T, previous: T) => boolean),
-): [T, React.Dispatch<React.SetStateAction<T>>];
+): [T, (v: T | ((v: T) => T), notify?: boolean) => void];
 export function useSharedState<T>(
   sharedState: SharedState<T> | undefined | null,
   shouldUpdate: boolean | ((current: T, previous: T) => boolean),
   initialValue: T,
-): [T, React.Dispatch<React.SetStateAction<T>>];
+): [T, (v: T | ((v: T) => T), notify?: boolean) => void];
 export function useSharedState<T>(
   _sharedState: SharedState<T> | undefined | null,
   shouldUpdate: boolean | ((current: T, previous: T) => boolean) = true,
   initialValue?: T,
-): [T, React.Dispatch<React.SetStateAction<T>>] {
+): [T, (v: T | ((v: T) => T), notify?: boolean) => void] {
   const sharedState = useMemo(
     () => _sharedState ?? new SharedState(initialValue as T),
     [_sharedState, initialValue],
@@ -50,9 +50,9 @@ export function useSharedState<T>(
   };
   useListen(sharedState, listener, afterListen);
 
-  const setSharedState = useCallback(
-    (v: React.SetStateAction<T>) => {
-      sharedState.setValue(v);
+  const setSharedState = useCallback<ValueNotifier<T>['setValue']>(
+    (v, notify) => {
+      sharedState.setValue(v, notify);
     },
     [sharedState],
   );

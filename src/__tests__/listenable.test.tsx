@@ -130,9 +130,11 @@ describe('useListen', () => {
     const changeNotifier = new ChangeNotifier();
     const valueNotifier = new ValueNotifier(0);
 
-    const Component1 = () => {
+    const Component1: React.FC<{ notifier?: ChangeNotifier }> = ({
+      notifier,
+    }) => {
       useListen(
-        changeNotifier,
+        notifier,
         () => {
           valueNotifier.setValue((n) => ++n);
         },
@@ -148,13 +150,20 @@ describe('useListen', () => {
 
     const App = () => {
       const [destoried, setDestoried] = useState(false);
-      const onClick = () => {
+      const [notifier, setNotifier] = useState<ChangeNotifier | undefined>(
+        changeNotifier,
+      );
+      const onClick1 = () => {
+        setNotifier(undefined);
+      };
+      const onClick2 = () => {
         setDestoried(true);
       };
       return (
         <>
-          {destoried ? <></> : <Component1 />}
-          <button id="b1" onClick={onClick} />
+          {destoried ? <></> : <Component1 notifier={notifier} />}
+          <button id="b1" onClick={onClick1} />
+          <button id="b2" onClick={onClick2} />
         </>
       );
     };
@@ -165,6 +174,7 @@ describe('useListen', () => {
       ReactDOM.createRoot(container).render(<App />);
     });
     const button1 = container.querySelector('#b1');
+    const button2 = container.querySelector('#b2');
     // After listener is added
     expect(valueNotifier.getValue()).toBe(1);
 
@@ -174,9 +184,19 @@ describe('useListen', () => {
     });
     expect(valueNotifier.getValue()).toBe(2);
 
-    // Unmount component 1
+    // Change notifier to undefined
     ReactTestUtils.act(() => {
       button1.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(valueNotifier.getValue()).toBe(1);
+    ReactTestUtils.act(() => {
+      changeNotifier.notifyListeners();
+    });
+    expect(valueNotifier.getValue()).toBe(1);
+
+    // Unmount component 1
+    ReactTestUtils.act(() => {
+      button2.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(valueNotifier.getValue()).toBe(0);
   });
