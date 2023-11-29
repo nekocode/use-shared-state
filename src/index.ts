@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { ValueNotifier, useListen } from './listenable';
 export * from './listenable';
 
@@ -25,9 +25,10 @@ export function useSharedState<T>(
   shouldUpdate: boolean | ((current: T, previous: T) => boolean) = true,
   initialValue?: T,
 ): [T, (v: T | ((v: T) => T), notify?: boolean) => void] {
+  const initialValueRef = useRef(initialValue);
   const sharedState = useMemo(
-    () => _sharedState ?? new SharedState(initialValue as T),
-    [_sharedState, initialValue],
+    () => _sharedState ?? new SharedState(initialValueRef.current as T),
+    [_sharedState],
   );
   const [state, setState] = useState<T>(sharedState.getValue());
 
